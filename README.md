@@ -27,13 +27,12 @@ Opções em **CONFIGURAÇÃO → SISTEMA → ATUALIZAÇÕES** (procurar automati
 ## Publicar uma versão nova
 
 1. Altere o código e atualize `docs/NOVIDADES.md` (vira o texto da release).
-2. Crie a tag da versão — por exemplo `v2.11`:
-   - no site: **Releases → Draft a new release → Choose a tag → `v2.11` → Publish release**, ou
-   - no git: `git tag v2.11 && git push origin v2.11`
-3. O GitHub Actions (aba **Actions**) compila Windows + Mac em ~3 minutos e anexa os arquivos à release.
+2. Mude o número no arquivo **`VERSION`** (ex.: `2.11`) e envie para a branch `main`.
+   *(Ou crie uma release `v2.11` no site: Releases → Draft a new release.)*
+3. O GitHub Actions (aba **Actions**) compila Windows + Mac em ~3 minutos e publica a release com os arquivos.
 4. Os monitores instalados avisam a versão nova.
 
-A versão do programa vem da tag (não precisa editar números no código).
+A versão do programa vem do `VERSION`/tag (não precisa editar números no código).
 
 ## Compilar na mão
 
