@@ -1,0 +1,409 @@
+RACK MONITOR BY DON  ·  V2.10
+=====================================================================
+Monitor de rack de transmissão: ATEM, HyperDeck, VideoHub e qualquer
+equipamento IP. Um único arquivo .exe — sem instalador, sem .NET,
+sem compilação no Windows e SEM ATEM SDK.
+
+
+NOVO NA V2.10 — ATUALIZAÇÃO AUTOMÁTICA
+---------------------------------------------------------------------
+• Instalou uma vez, pronto: o monitor procura versão nova no GitHub ao
+  abrir e a cada 6 horas. Quando sai uma, aparece  ⬆ NOVA VERSÃO  no
+  topo do painel — um clique e ele baixa, confere a assinatura
+  (SHA-256) e reinicia sozinho em poucos segundos. Sem desinstalar.
+• Configuração, jobs e relatórios são mantidos.
+• CONFIGURAÇÃO → SISTEMA → ATUALIZAÇÕES: procurar automaticamente e
+  "instalar sozinho" (só quando nenhum gravador estiver em REC).
+• A atualização só pode ser disparada no computador do rack.
+
+NOVO NA V2.9 — GRAVAÇÃO À PROVA DE ESQUECIMENTO
+---------------------------------------------------------------------
+• PAINEL: o card de cada ATEM mostra TODAS as M/E (PVW à esquerda,
+  PGM à direita, FTB marcado).
+• NOME AUTOMÁTICO NOS CLIPES: REC dado pelo monitor grava com nome
+  tipo  NomeDoJob_PGM_LIMPO_001 . O número continua de onde parou no
+  cartão. Modelo em CONFIGURAÇÃO → NOME DOS CLIPES ({JOB} {DECK} {NNN}
+  {DATA} {HORA}). REC dado pelo Companion/ATEM/painel usa o nome do
+  próprio gravador.
+• INVENTÁRIO DE CARTÕES: GRAVAÇÕES (ou JOBS) → INVENTÁRIO DE CARTÕES.
+  Uma folha por job com cada HyperDeck → slot/cartão → clipes, duração,
+  codec e horário do REC, mais as gravações do job e campos de
+  assinatura (entregue por / recebido por). Imprimir/PDF e CSV.
+  Ao ENCERRAR O JOB o monitor tira uma "foto" dos cartões e guarda.
+  (HyperDeck "Via Companion" não fornece a lista de clipes.)
+• ALARME "ESQUECEU DE GRAVAR?": quando o RELÓGIO/RUNDOWN é iniciado
+  ou a ATEM sai do preto (M/E 1 sem FTB e fora do Black), e algum
+  gravador vigiado (ou todos os HyperDecks, se nenhum estiver marcado
+  como vigiado) não estiver em REC depois de 10 s → alerta CRÍTICO.
+  Some sozinho quando todos gravam. Ajuste a tolerância ou desligue em
+  CONFIGURAÇÃO → REGRAS DE ALERTA.
+
+NOVO NA V2.8.3 — ATEM "SEM VAGA"
+---------------------------------------------------------------------
+• A ATEM aceita um número limitado de clientes ao mesmo tempo (painéis,
+  cada ATEM Software Control aberto, Companion, painel de CCU, painéis
+  VideoHub de AUX, este monitor…). Quando lota, o próximo a conectar
+  fica "conectando" para sempre — inclusive o Companion.
+• Agora o card da ATEM diz "ATEM SEM VAGA" quando a mesa recusa a
+  conexão (ou responde ao ping mas não aceita o controle), em vez de
+  só "desconectada". Solução: fechar um cliente sem uso.
+• Quem só abre o monitor no navegador/celular NÃO ocupa vaga; cada
+  computador rodando o programa ocupa uma.
+
+NOVO NA V2.8.2 — CONTROLE DE CÂMERA (CCU) SEM "FALSO AJUSTE"
+---------------------------------------------------------------------
+• Câmeras em automático (ou ruído do sinal) mexem 0,01 no lift/gama/
+  ganho de cor o tempo todo — isso enchia o log de "ajustes" que
+  ninguém fez. Agora só vira evento quando a mudança passa de um
+  mínimo (padrão 5%; balanço de branco 150 K) comparado com o ÚLTIMO
+  valor registrado. Giro real continua sendo registrado; a tabela ao
+  vivo da aba ATEM segue mostrando o valor exato.
+• CONFIGURAÇÃO → REGRAS DE ALERTA: "CCU · REGISTRAR AJUSTE A PARTIR
+  DE (%)" e a opção "NÃO registrar ajustes de controle de câmera".
+
+NOVO NA V2.8 — HYPERDECK "VIA COMPANION"
+---------------------------------------------------------------------
+Vários HyperDecks (ex.: Studio Mini, Studio 12G) aceitam UMA conexão
+de controle por vez. Se o Companion já está conectado, o monitor era
+recusado (aparecia "EOF") — e, se pegasse a vaga primeiro, o Companion
+perderia o controle.
+• Agora cada HyperDeck pode ser lido "VIA COMPANION": o monitor lê o
+  estado pelas variáveis do módulo HyperDeck do Companion, sem abrir
+  conexão com o gravador. O Companion continua dono do controle.
+• Como usar: CONFIGURAÇÃO → logo abaixo de cada HyperDeck há a linha
+  "COMO LER ESTE HYPERDECK" → marque "Via Companion" → TESTAR /
+  ESCOLHER → clique na conexão certa (ou escreva o nome igual ao
+  Companion, ex.: hyperdeck_5_PRODUZ) → SALVAR CONFIGURAÇÃO.
+  (V2.8.1: o campo do nome ficava espremido ao lado do GRUPO.) IP/porta do Companion: cartão COMPANION
+  (padrão porta 8000).
+• No Companion, em cada conexão HyperDeck: Timecode Variables =
+  Polling (para o monitor ter o timecode).
+• Neste modo é somente leitura (REC/STOP/formatar pelo Companion).
+• Quando um HyperDeck recusa por estar ocupado, o card agora diz
+  "OCUPADO … use Via Companion" em vez de "EOF".
+
+CORREÇÃO NA V2.7.1
+---------------------------------------------------------------------
+• Corrigido: quando não havia NENHUM alerta ativo (tudo OK), a tela
+  travava e as abas não trocavam mais (acontecia, por exemplo, ao
+  salvar uma configuração que resolvia o último alerta).
+• Se uma tela tiver qualquer erro, agora só ela mostra o aviso; as
+  outras abas continuam funcionando.
+
+NOVO NA V2.7
+---------------------------------------------------------------------
+• Instalador para Windows e app para Mac — sem janela de comando.
+• Abrir de novo com o monitor já rodando apenas reabre o painel.
+• CONFIGURAÇÃO → SISTEMA: iniciar com o computador, abrir a pasta de
+  dados e ENCERRAR MONITOR.
+• Relógio: o roteiro salva sozinho a cada alteração e INICIAR sempre
+  funciona (sem roteiro, vira cronômetro livre). Bloco sem duração =
+  cronômetro progressivo.
+• Mac: ping e busca de aparelhos Blackmagic ajustados para o macOS.
+
+NOVO NA V2.6
+---------------------------------------------------------------------
+NOVOS EQUIPAMENTOS (CONFIGURAÇÃO → tipo)
+• Câmera Blackmagic (REST): Studio Camera 4K Plus/Pro, Micro Studio 4K
+  G2, URSA Broadcast G2, Cinema Camera 6K e mais novas (habilite o
+  REST no Blackmagic Camera Setup). Gravação interna da câmera entra
+  como gravador: REC, TC, mídia, vigilância, troca de slot, relatórios
+  e REC/STOP pelo painel.
+• Encoder Web Presenter (TCP 9977): no ar/parado, bitrate, duração e
+  cache. Alertas: STREAM CAIU e INTERNET LENTA NO STREAM (cache alto).
+• Nobreak (SNMP): rede elétrica/bateria, carga, autonomia, carga de
+  saída. UPS-MIB padrão (RFC 1628) e APC. Alerta: NOBREAK NA BATERIA.
+• Switch (SNMP): portas escolhidas (ex.: 1-8,24) com link, velocidade e
+  erros. Alertas: PORTA DO SWITCH CAIU e ERROS NA PORTA.
+  Ative SNMP v2c (leitura) no nobreak/switch; community padrão "public".
+  O número da porta é o ifIndex do switch (na maioria = número da porta).
+
+RELÓGIO E RUNDOWN (aba nova)
+• Hora, contagem regressiva do bloco (amarelo perto do fim, vermelho
+  estourado), tempo no ar, próximo bloco e ritmo (no tempo / atrasado
+  / adiantado). Tela cheia para TV.
+• Cada início de bloco vira MARCADOR com TC (entra na EDL e relatórios).
+• Stream Deck: GET /api/rundown/next (também start e prev).
+
+SAÍDA TSL (CONFIGURAÇÃO)
+• Tally (vermelho PGM, verde PVW) + nome de cada fonte da ATEM para
+  multiviewers, UMDs e controladores de tally: TSL 5.0 (UDP/TCP) e
+  TSL 3.1 (UDP).
+
+JOBS & RELATÓRIOS
+• HISTÓRICO GERAL (30/90/365 dias): horas no ar, cortes, equipamentos
+  que mais caem, alertas mais frequentes, gravação e interrupções.
+• Relatório automático no fim do job pelo Telegram e/ou e-mail (SMTP),
+  e botão ENVIAR RESUMO AGORA.
+• COMPARAR MONTAGEM: salve uma "foto do patch" (nomes de inputs, AUX,
+  labels e rotas) e compare depois — lista tudo o que mudou.
+
+KIT COMPANION (CONFIGURAÇÃO)
+• Endereços prontos para botões: marcadores, próximo bloco, checklist,
+  armar/desarmar vigilância.
+
+APP E NOTIFICAÇÕES
+• No PC do rack (localhost) o painel pode ser instalado como app e
+  mostrar notificações do Windows nos alertas críticos.
+  Em celulares pela rede o navegador bloqueia notificações em http —
+  use o Telegram.
+
+NÃO FEITO (precisa de dados do rack real)
+• Alarme de áudio do PGM: precisa da captura de diagnóstico.
+• Página .companionconfig pronta: exporte uma página do seu Companion
+  e envie, para gerar no formato exato da sua versão.
+
+NOVO NA V2.5
+---------------------------------------------------------------------
+PÓS-PRODUÇÃO (aba nova)
+• Marcadores do operador: botões (GOL, INTERVALO, DESTAQUE…, editáveis
+  em CONFIGURAÇÃO), teclas 1–9 e texto livre. Cada marcador grava o
+  timecode de TODOS os HyperDecks no instante + o que estava no ar.
+  Stream Deck: Companion → Generic HTTP → GET
+  http://IP-DO-PC:8787/api/marker?label=GOL
+• EDL CMX 3600 do corte do PROGRAM sobre o TC de um gravador de
+  referência (DaVinci, Premiere, Avid). Marcadores entram como LOC.
+  Precisão típica de 1–2 frames; o gravador de referência precisa
+  estar em REC no trecho.
+• Clipes gravados por cartão (nome, codec, formato, duração) + CSV.
+• O TC dos HyperDecks agora é interpolado entre leituras (precisão
+  de frame nos eventos de corte e nos marcadores).
+
+CHECKLIST DE PRÉ-TRANSMISSÃO (aba nova)
+• Confere rede, mídia e espaço, REC dos vigiados, formato/codec do
+  par, rotas e AUX travados, FTB e stream. Veredito: PRONTO / PRONTO
+  COM AVISOS / NÃO PRONTO. Fica salvo no job e sai nos relatórios.
+
+AGENDA (CONFIGURAÇÃO)
+• Horários para rodar o checklist, armar e desarmar a vigilância de
+  gravação, com dias da semana.
+
+SAÚDE (aba nova)
+• Latência e disponibilidade das últimas 2 h por equipamento (gráfico),
+  quedas e detalhes de firmware/protocolo.
+• GRAVADOR DE DIAGNÓSTICO: 30 s a 5 min de tudo o que os equipamentos
+  mandam, num .txt para download. Use no primeiro dia no rack real
+  (mexa no Camera Control Panel, troque AUX, corte) e envie o arquivo
+  para validar as partes experimentais e liberar o áudio do PGM.
+• Lista dos comandos da ATEM que o monitor ainda não interpreta.
+
+TELEGRAM (CONFIGURAÇÃO)
+• Alertas no celular por um bot do Telegram (todos ou só críticos),
+  com botão de teste. O PC precisa de internet.
+
+PERFIS DE EVENTO / HOUSE (CONFIGURAÇÃO)
+• Salva equipamentos, regras, vigilância, pares, rotas, AUX e agenda
+  com um nome; carregar troca tudo. Exportar/importar em .json.
+
+OUTROS
+• Ao reiniciar o monitor no meio do job, a linha do tempo, os
+  marcadores e o checklist voltam para a tela.
+
+NOVO NA V2.4
+---------------------------------------------------------------------
+• PAINÉIS ATEM (Advanced Panel, Broadcast Panel 1/2 M/E, Camera
+  Control Panel) e qualquer aparelho que só tem IP: novo tipo
+  "Painel / só IP (ping)" — online/offline, latência, quedas no relatório.
+  Basta o IP.
+• PROCURAR NA REDE agora acha todo aparelho Blackmagic pelo MAC
+  (7C:2E:0D), inclusive painéis e câmeras que não têm porta de controle.
+• CONTROLE DE CÂMERA (CCU) — EXPERIMENTAL: a ATEM repassa a todos os
+  clientes os ajustes feitos no Camera Control Panel / ATEM Software
+  Control / Companion. O monitor mostra por câmera: íris, foco, ganho,
+  shutter, balanço de branco, lift/gama/ganho de cor, contraste e
+  saturação, com "NO AR" na câmera do PGM. Cada ajuste vira evento
+  ("CAM 3 GRUA · Íris: 63% → 69%") — o giro do botão é agrupado num só
+  registro. Relatório completo e resumo trazem ajustes por câmera.
+  Valide no primeiro uso comparando com o painel: a posição dos valores
+  no protocolo não é documentada pela Blackmagic.
+• LIMITE: a ATEM não informa QUAL painel apertou cada botão. O monitor
+  registra o que mudou e quando; a origem aparece como EXTERNO.
+
+NOVO NA V2.3
+---------------------------------------------------------------------
+• TROCA DE SLOT DOS HYPERDECKS
+  - Antes: alerta "VAI TROCAR DE SLOT" quando o slot em gravação
+    tem menos de 5 min (ajustável em REGRAS) e existe outro slot com
+    espaço. Se não houver outro slot: aviso de que a gravação vai PARAR.
+  - Na hora: evento "TROCA DE SLOT" (slot de/para, nome do cartão, TC).
+  - No card do gravador, no painel e nos relatórios (completo e resumo).
+• ORIGEM DE CADA EVENTO: coluna ORIGEM na linha do tempo, no CSV e no
+  relatório. Comandos feitos pelo painel mostram o IP (e o nome do PC
+  quando a rede informa) de quem clicou. Trocas feitas fora do monitor
+  (painel físico, Companion, ATEM Software Control) aparecem como
+  EXTERNO — o protocolo Blackmagic não informa o IP de quem trocou.
+• FORMATAR CARTÃO/SSD (HyperDeck), com comandos liberados:
+  bloqueado se o gravador estiver em REC ou vigiado com a vigilância
+  armada; escolhe slot, exFAT/HFS+ e nome; exige digitar FORMATAR;
+  fica registrado como evento crítico com a origem.
+• AUX: as mudanças em CONFIGURAÇÃO → AUX DAS ATEMs salvam na hora
+  (antes precisava clicar em SALVAR). "Ignorar os sem nome" avisa
+  quando todos os AUX já têm nome.
+• CADASTRO: só o IP é necessário. A porta de ATEM/HyperDeck/VideoHub
+  é a padrão de fábrica e aparece como "auto"; o campo só fica
+  editável em Porta TCP/HTTP (ou em EDITAR PORTAS).
+
+NOVO NA V2.2
+---------------------------------------------------------------------
+• Quantidade de M/E, entradas e AUX vem da própria mesa — nada fixo.
+  Testado com o perfil da Constellation 8K: 4 M/E, 40 entradas e
+  24 AUX (e, ao mesmo tempo, uma Studio HD8 com 2 M/E e 4 AUX).
+• Os AUX usam os nomes de saída gravados na ATEM (ATEM Software
+  Control → nomes das saídas). Um nome dado no monitor tem prioridade.
+• Com muitos AUX: lista compacta com busca e, em CONFIGURAÇÃO →
+  AUX DAS ATEMs, botões MONITORAR TODOS / IGNORAR TODOS /
+  IGNORAR OS SEM NOME (ignora quem não tem nome nem na mesa).
+• Mesa com mais de 20 fontes: os botões de fonte de cada M/E ficam
+  recolhidos (▸ MOSTRAR) para a tela caber; PGM/PVW seguem ao vivo.
+  4 M/E aparecem em 2×2.
+
+NOVO NA V2.1
+---------------------------------------------------------------------
+• ATEM: PREVIEW à esquerda e PROGRAM à direita (como no multiview).
+• RESUMO DO JOB EM 1 PÁGINA: quantas vezes cada input entrou no ar,
+  tempo e % por M/E, inputs usados (ex.: "6 de 12"), cortes, tempo
+  gravado e ocorrências críticas. PDF curto + CSV do resumo.
+  → JOBS & RELATÓRIOS → RESUMO
+• RELATÓRIO DE ENTRADAS E SAÍDAS (ATEM + VIDEOHUB): todos os inputs
+  (número, tipo, nome, nome curto, onde está no ar), saídas AUX, M/E,
+  entradas/saídas e rotas das VideoHubs. Escolha quais equipamentos
+  entram. PDF ou CSV. → JOBS & RELATÓRIOS → RELATÓRIO DE I/O
+• AUX — ESCOLHA O QUE MONITORAR (botão ⚙ em cada AUX ou em
+  CONFIGURAÇÃO → AUX DAS ATEMs):
+    MONITORAR  aparece e registra trocas (padrão)
+    IGNORAR    some da tela, da linha do tempo, do relatório e do
+               Companion — ex.: AUX do video man
+    TRAVAR     alerta crítico se sair da fonte atual — ex.: AUX do
+               encoder ou do telão
+  Também dá para dar nome a cada AUX (VIDEO MAN, ENCODER, TELÃO…).
+
+
+1. COMO INSTALAR E ABRIR (WINDOWS)
+---------------------------------------------------------------------
+• Dois cliques em RACK_MONITOR_BY_DON_V2.8.1_Instalador_Windows.exe
+  → confirme → pronto. Não precisa de administrador.
+  Instala em %LOCALAPPDATA%\Programs\RACK MONITOR BY DON e cria:
+    - atalho na Área de Trabalho e no Menu Iniciar
+    - "RACK MONITOR (demonstração)" no Menu Iniciar
+    - "Desinstalar RACK MONITOR" (também em Adicionar/Remover programas)
+    - opcional: abrir junto com o Windows
+• O monitor roda SEM JANELA: o painel abre no navegador
+  (http://localhost:8787). Clicar no atalho de novo só reabre o painel.
+• Encerrar: CONFIGURAÇÃO → SISTEMA → ENCERRAR MONITOR.
+• Atualizar para uma versão nova: rode o instalador novo por cima —
+  jobs, relatórios e configuração são mantidos.
+• O instalador não tem assinatura digital: o Windows pode mostrar
+  "O Windows protegeu o computador" → Mais informações → Executar
+  assim mesmo.
+• Na primeira vez o Firewall do Windows pode perguntar: permita em
+  "Redes privadas" para tablets, celulares e TV acessarem o painel.
+• Registro de funcionamento (para suporte):
+  %LOCALAPPDATA%\DON_RACK_MONITOR\v2\rackmonitor.log
+
+MIGRAÇÃO DA V0.7.8
+• Na primeira execução, os equipamentos de equipamentos.tsv e o par de
+  gravação de par_gravacao.tsv são importados automaticamente.
+• Os dados novos ficam em %LOCALAPPDATA%\DON_RACK_MONITOR\v2
+  A V0.7.8 e os jobs antigos NÃO são alterados (podem rodar lado a lado,
+  mas evite duas estações consultando os mesmos HyperDecks sem
+  necessidade).
+
+
+2. O QUE ELE MONITORA
+---------------------------------------------------------------------
+ATEM (UDP 9910 — protocolo nativo, o mesmo caminho do módulo ATEM do
+Companion; nada do SDK/COM é usado)
+  • PROGRAM e PREVIEW de todos os M/E, com histórico de cada corte
+  • Barra de transição, FADE TO BLACK, USK e DSK no ar
+  • Todas as saídas AUX e quem trocou
+  • Nomes das fontes, tally por fonte, macros (e qual está rodando)
+  • Streaming e gravação interna (modelos que têm), avisos da mesa
+
+HYPERDECK (TCP 9993 — conexão persistente com "notify")
+  • REC / PARADO na hora (não a cada 7,5 s como na V0.7.8)
+  • Timecode ao vivo e alarme "REC SEM AVANÇO DE TIMECODE"
+  • Mídia por slot (montada, vazia, erro), tempo restante por slot e
+    total, formato de vídeo e codec, clipe atual
+  • Gravação que parou sem comando = alerta que fica até reconhecer
+
+VIDEOHUB (TCP 9990 — a matriz empurra cada troca)
+  • Todas as rotas, labels de entrada/saída e locks
+  • Cada troca registrada com origem → destino
+  • Rotas protegidas: TRAVAR (alerta se sair do valor certo) ou
+    VIGIAR (alerta em qualquer troca)
+
+QUALQUER EQUIPAMENTO IP (Porta TCP ou HTTP)
+  • Encoder, câmera PTZ, intercom, NDI, servidor, Companion…
+  • Online/offline e latência
+
+
+3. ALERTAS (com som, banner vermelho e registro)
+---------------------------------------------------------------------
+  SEM CONEXÃO · MÍDIA ACABANDO / POUCO ESPAÇO · SEM MÍDIA / ERRO ·
+  REC SEM AVANÇO DE TIMECODE · GRAVAÇÃO INTERROMPIDA ·
+  NÃO ESTÁ GRAVANDO (vigilância armada) · PAR DIVERGENTE ·
+  FORMATOS DIFERENTES NO PAR · ROTA PROTEGIDA ALTERADA / FORA DO
+  PADRÃO · FADE TO BLACK ATIVO · STREAM CAIU · LATÊNCIA ALTA
+  Todos os limites são ajustáveis em CONFIGURAÇÃO.
+
+VIGILÂNCIA DE GRAVAÇÃO (botão no topo)
+  Escolha em CONFIGURAÇÃO quais gravadores devem estar em REC.
+  Armada: qualquer um fora de REC vira crítico com som.
+  Pares principal/backup comparam REC, formato e codec.
+
+
+4. O QUE DÁ PARA FAZER
+---------------------------------------------------------------------
+• Painel único para PC, tablet, celular e TV (mesmo endereço na rede)
+• TALLY: celular do câmera vira luz de tally (vermelho/verde)
+  → aba TALLY → toque na câmera; cole o endereço no celular
+• TELÃO: tela de status para a TV do rack/engenharia
+• JOBS: cada transmissão vira um job com linha do tempo gravada evento
+  a evento (sobrevive a reinício do monitor)
+• RELATÓRIO do job (imprimir / salvar PDF pelo navegador, sem Word):
+  tempo no ar de cada fonte por M/E, número de cortes, tempo gravado
+  por gravador, quedas de conexão, ocorrências críticas, linha do tempo
+• CSV de qualquer job (abre no Excel)
+• COMPANION: o monitor escreve variáveis personalizadas no Companion
+  (ex.: $(custom:rack_hyperdeck_pgm_sujo_rec), ..._remain,
+  rack_atem_1_constellation_8k_me1_pgm, rack_alerts_crit). Botões do
+  Stream Deck mostram REC, tempo restante, PGM e alertas. A lista
+  completa com valores atuais está em CONFIGURAÇÃO.
+• WEBHOOK: alertas vão para Discord, Slack, Teams, n8n, Node-RED…
+• PROCURAR NA REDE: descobre HyperDecks, VideoHubs e ATEMs numa faixa
+  (ex.: 192.168.10.x)
+
+COMANDOS FÍSICOS (DESLIGADOS DE FÁBRICA)
+  Se você ativar em CONFIGURAÇÃO (só no PC do rack):
+  CUT, AUTO, FTB, escolher PREVIEW, rotear AUX, rodar macro,
+  REC/STOP nos HyperDecks (clipe com o nome do job), "REC em todos os
+  vigiados", rotear/restaurar saídas da VideoHub.
+  Proteções: precisam ser LIBERADOS no botão 🔒 (expira sozinho),
+  PIN opcional, só do PC local (a menos que você permita), confirmação
+  em cada comando crítico, tudo registrado na linha do tempo.
+
+
+5. ENDEREÇOS ÚTEIS
+---------------------------------------------------------------------
+  http://localhost:8787/                painel
+  http://IP-DO-PC:8787/#/wall           TELÃO (TV do rack)
+  http://IP-DO-PC:8787/#/tally          escolher tally
+  http://IP-DO-PC:8787/api/companion    variáveis em JSON
+  http://IP-DO-PC:8787/api/state        estado completo em JSON
+
+Opções de linha de comando:
+  -port 8790     outra porta     -no-browser   não abrir navegador
+  -demo          modo demonstração
+
+
+6. LIMITES HONESTOS
+---------------------------------------------------------------------
+• Validado de ponta a ponta contra simuladores que falam os protocolos
+  Blackmagic (incluídos no modo demo). Ainda NÃO foi rodado no seu rack
+  real: faça o primeiro teste fora do ar.
+• A ATEM conta este monitor como 1 cliente de rede (como o Companion).
+• Gravação interna/streaming da ATEM: leitura experimental, depende do
+  modelo e firmware.
+• REC confirmado pelo protocolo não prova integridade dos arquivos.
+• Código-fonte em codigo_fonte (Go). Para recompilar:
+  go build -o RackMonitorByDon.exe .

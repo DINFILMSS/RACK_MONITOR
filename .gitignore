@@ -1,0 +1,7 @@
+dist/
+installer/payload/*.exe
+installer/payload/LEIA-ME.txt
+*.new
+*.old
+*.bad
+/rackmon*

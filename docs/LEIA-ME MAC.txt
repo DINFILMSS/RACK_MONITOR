@@ -1,0 +1,63 @@
+RACK MONITOR BY DON · V2.10 · macOS
+=====================================================================
+Funciona em Macs Intel e Apple Silicon (M1/M2/M3/M4), macOS 11 ou mais novo.
+
+INSTALAR
+1. Abra o zip e arraste "RACK MONITOR BY DON.app" (e, se quiser,
+   "RACK MONITOR (demonstração).app") para a pasta Aplicativos.
+2. Abra pelo Launchpad ou pela pasta Aplicativos. O painel abre no
+   navegador (http://localhost:8787). Não aparece janela nem ícone no
+   Dock: o monitor roda em segundo plano.
+3. Abrir o app de novo com ele já rodando só reabre o painel.
+
+PRIMEIRA VEZ — AVISO DE SEGURANÇA DA APPLE
+O app não tem assinatura de desenvolvedor Apple (Developer ID).
+Na primeira vez o macOS bloqueia. Para liberar:
+  • Clique com o botão direito no app → Abrir → Abrir; ou
+  • Ajustes do Sistema → Privacidade e Segurança → role até
+    "RACK MONITOR BY DON foi bloqueado" → Abrir Mesmo Assim.
+Se aparecer "está danificado e não pode ser aberto", rode UMA vez no
+Terminal (copie e cole):
+    xattr -cr "/Applications/RACK MONITOR BY DON.app"
+Depois disso abre normalmente, sem Terminal.
+
+O macOS também pode perguntar se o app pode "aceitar conexões de
+entrada": clique em Permitir (para tablets e celulares acessarem).
+
+USAR
+• Encerrar: CONFIGURAÇÃO → SISTEMA → ENCERRAR MONITOR.
+• Abrir junto com o Mac: CONFIGURAÇÃO → SISTEMA → marque
+  "Iniciar o monitor junto com o Mac".
+• Dados, jobs e log: ~/Library/Application Support/DON_RACK_MONITOR/v2
+  (CONFIGURAÇÃO → SISTEMA → ABRIR PASTA DE DADOS)
+
+NOVO NA V2.10
+• Atualização automática: aparece  ⬆ NOVA VERSÃO  no topo do painel e
+  um clique atualiza. Deixe o app na pasta Aplicativos (fora da pasta
+  Downloads) para a atualização conseguir substituir o programa.
+
+NOVO NA V2.9
+• Painel mostra todas as M/E de cada ATEM.
+• Nome automático nos clipes (REC pelo monitor) — CONFIGURAÇÃO → NOME
+  DOS CLIPES.
+• Inventário de cartões por job (imprimir/PDF/CSV), com foto dos
+  cartões ao encerrar o job.
+• Alarme "ESQUECEU DE GRAVAR?" (relógio iniciado ou ATEM saiu do preto
+  e gravador parado).
+
+NOVO NA V2.8.3
+• Card da ATEM mostra "ATEM SEM VAGA" quando a mesa atingiu o limite
+  de clientes conectados (painéis, Software Control, Companion…).
+  Feche um cliente sem uso.
+
+NOVO NA V2.8.2
+• Controle de câmera (CCU): oscilações mínimas de câmera em automático
+  não viram mais "ajuste" no log (padrão: só a partir de 5%; balanço de
+  branco 150 K). Ajuste/desligue em CONFIGURAÇÃO → REGRAS DE ALERTA.
+
+REMOVER
+Arraste o app para o Lixo. Para apagar também os jobs e a
+configuração, apague a pasta de dados acima.
+
+Todo o resto (o que monitora, alertas, relatórios) é igual à versão
+Windows — veja o LEIA-ME.txt do pacote Windows.

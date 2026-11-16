@@ -1,0 +1,80 @@
+# Publica uma versão nova do RACK MONITOR BY DON.
+#
+# Como usar: crie uma tag "v2.11" (por exemplo) — pelo git ou em
+# Releases → "Draft a new release" → "Choose a tag" → v2.11 → Publish.
+# Este fluxo compila Windows + Mac, confere tudo e anexa os arquivos à release.
+# Os programas já instalados enxergam a versão nova e se atualizam sozinhos.
+
+name: Publicar versão
+
+on:
+  push:
+    tags: ["v*"]
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publicar-${{ github.event.release.tag_name || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  compilar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || github.ref }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Dependências
+        run: pip install pillow
+
+      - name: Testes básicos
+        run: go vet . && GOOS=windows go vet . && GOOS=darwin go vet .
+
+      - name: Compilar Windows e Mac
+        env:
+          TAG: ${{ github.event.release.tag_name || github.ref_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          V="${TAG#v}"
+          LD="-s -w -X main.AppVersion=$V -X main.UpdateRepo=$REPO"
+          mkdir -p dist installer/payload
+
+          # Windows: programa (usado pela atualização automática) + instalador
+          GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "$LD -H windowsgui" -o dist/RackMonitorByDon_windows.exe .
+          cp dist/RackMonitorByDon_windows.exe installer/payload/RackMonitorByDon.exe
+          cp docs/LEIA-ME.txt installer/payload/LEIA-ME.txt
+          (cd installer && GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "-s -w -H windowsgui -X main.version=$V" -o "../dist/RACK_MONITOR_BY_DON_V${V}_Instalador_Windows.exe" .)
+
+          # Mac: binário universal (Intel + Apple Silicon) + zip com os apps
+          GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags "$LD" -o /tmp/m_amd64 .
+          GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags "$LD" -o /tmp/m_arm64 .
+          cp "docs/LEIA-ME MAC.txt" dist/
+          python3 tools/macbundle.py /tmp/m_amd64 /tmp/m_arm64 dist "$V" web/logo.png
+          rm -f "dist/LEIA-ME MAC.txt"
+
+          # somas SHA-256: a atualização automática recusa arquivo que não confere
+          cd dist && sha256sum * > ../SHA256SUMS.txt && mv ../SHA256SUMS.txt . && cat SHA256SUMS.txt
+
+      - name: Publicar arquivos na release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || github.ref_name }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+          else
+            NOTES=docs/NOVIDADES.md
+            gh release create "$TAG" dist/* --title "RACK MONITOR BY DON $TAG" --notes-file "$NOTES"
+          fi
