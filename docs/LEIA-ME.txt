@@ -1,9 +1,15 @@
-RACK MONITOR BY DON  ·  V2.10.1
+RACK MONITOR BY DON  ·  V2.10.2
 =====================================================================
 Monitor de rack de transmissão: ATEM, HyperDeck, VideoHub e qualquer
 equipamento IP. Um único arquivo .exe — sem instalador, sem .NET,
 sem compilação no Windows e SEM ATEM SDK.
 
+
+CORREÇÃO NA V2.10.2 — FORMATAR ("102 invalid value")
+---------------------------------------------------------------------
+• O nome do cartão em exFAT pode ter no máximo 11 caracteres; o nome
+  sugerido passava disso e o HyperDeck recusava. Agora é ajustado
+  sozinho. Só aparecem slots com cartão montado.
 
 NOVO NA V2.10.1 — FORMATAR NO MODO "VIA COMPANION"
 ---------------------------------------------------------------------

@@ -454,9 +454,9 @@ window.deckFormat = id => {
   const rest = d.via === "companion";
   const b = modal("FORMATAR MÍDIA · " + d.name, `<div class="slotnote crit" style="margin:0 0 12px">⚠ APAGA TODO O CONTEÚDO do cartão/SSD escolhido. Não tem volta.</div>
     ${rest ? `<div class="mu sm" style="margin:-4px 0 10px">Modo "Via Companion": a formatação vai pela <b>REST API</b> do HyperDeck (outro canal, não derruba o Companion). Precisa do firmware 8.4+.</div>` : ""}
-    <div class="form"><label>${rest ? "MÍDIA" : "SLOT"}<select id="fs_s">${rest ? `<option value="">lendo mídias do HyperDeck…</option>` : slots.map(([i, x]) => `<option value="${i}" ${+i !== k.activeSlot ? "selected" : ""}>Slot ${i} · ${esc(x.volume || mediaTxt(x.status))} · ${x.status === "mounted" ? hms(x.remainSec) + " livres" : mediaTxt(x.status)}</option>`).join("")}</select></label>
+    <div class="form"><label>${rest ? "MÍDIA" : "SLOT"}<select id="fs_s">${rest ? `<option value="">lendo mídias do HyperDeck…</option>` : (slots.filter(([i, x]) => x.status === "mounted").map(([i, x]) => `<option value="${i}" ${+i !== k.activeSlot ? "selected" : ""}>Slot ${i} · ${esc(x.volume || "sem nome")} · ${hms(x.remainSec)} livres${+i === k.activeSlot ? " · ATIVO" : ""}</option>`).join("") || `<option value="">nenhum cartão montado</option>`)}</select></label>
     <label>SISTEMA DE ARQUIVOS<select id="fs_f"><option value="0">exFAT (Windows e Mac)</option><option value="1">HFS+ (Mac)</option></select></label>
-    <label>NOME DO CARTÃO<input id="fs_n" value="${esc((S.job?.name || d.name).replace(/[^\w-]+/g, "_").slice(0, 24))}"></label></div>
+    <label>NOME DO CARTÃO <span class="xs mu2">(exFAT: até 11 letras)</span><input id="fs_n" maxlength="11" value="${esc(d.name.replace(/hyper\s*deck/i, "HD").replace(/[^\w-]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 11))}"></label></div>
     <label class="form" style="display:block;margin-top:12px"><span class="xs mu">PARA CONFIRMAR, DIGITE <b style="color:var(--red)">FORMATAR</b></span><input id="fs_c" style="width:100%" autocomplete="off"></label>
     <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn" onclick="closeModal()">CANCELAR</button><button class="btn red big" id="fs_go" disabled>⌫ FORMATAR AGORA</button></div>`);
   let media = [];
@@ -464,10 +464,12 @@ window.deckFormat = id => {
     media = L || [];
     $("#fs_s", b).innerHTML = media.length ? media.map(m => `<option value="${esc(m.deviceName)}" ${m.activeDisk ? "" : "selected"}>${esc(m.volume || m.deviceName)} · ${esc(m.deviceName)}${m.activeDisk ? " · ATIVA (gravando aqui)" : ""}${m.remainingRecordTime ? " · " + hms(m.remainingRecordTime) + " livres" : ""}</option>`).join("") : `<option value="">nenhuma mídia montada</option>`;
   }).catch(e => { $("#fs_s", b).innerHTML = `<option value="">não leu as mídias</option>`; toast(esc(e.message), "crit"); });
+  $("#fs_f", b).onchange = e => { const n = $("#fs_n", b); n.maxLength = e.target.value === "1" ? 27 : 11; n.value = n.value.slice(0, n.maxLength); };
   $("#fs_c", b).oninput = e => $("#fs_go", b).disabled = e.target.value.trim().toUpperCase() !== "FORMATAR";
   $("#fs_go", b).onclick = async () => {
     const sel = $("#fs_s", b).value;
     if (rest && !sel) { toast("Escolha a mídia.", "warn"); return; }
+    if (!rest && !sel) { toast("Nenhum cartão montado para formatar.", "warn"); return; }
     const slot = rest ? 0 : +sel, lbl = rest ? (media.find(m => m.deviceName === sel)?.volume || sel) : "Slot " + slot;
     $("#fs_go", b).disabled = true; $("#fs_go", b).textContent = "FORMATANDO…";
     try { await api("POST", "/api/control", { device: id, action: "format", a: slot, b: +$("#fs_f", b).value, name: $("#fs_n", b).value, media: rest ? sel : "" }); closeModal(); toast(`${esc(lbl)} de ${esc(d.name)} formatado.`, "ok"); }

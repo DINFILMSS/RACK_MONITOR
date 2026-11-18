@@ -1,4 +1,9 @@
-## Novidades da V2.10.1
+## Novidades da V2.10.2
+
+- **Corrigido "102 invalid value" ao formatar**: o exFAT aceita no máximo **11 caracteres** no nome do cartão e o nome sugerido era maior. Agora o nome é ajustado sozinho (exFAT 11, HFS+ 27) e, se o gravador ainda recusar o nome, formata mantendo o nome atual do cartão.
+- A lista de formatação mostra só os slots **com cartão montado** e marca qual está ATIVO.
+
+## Da V2.10.1
 
 - **Formatar cartão/SSD também no modo "Via Companion"**: quando o Companion ocupa a conexão do HyperDeck, a formatação agora vai pela **REST API** do HyperDeck (canal separado — não derruba o Companion). O botão **⌫ FORMATAR CARTÃO / SSD** aparece no card do gravador (com comandos liberados) e lista as mídias com nome, espaço livre e qual está ativa.
 - Requer firmware do HyperDeck 8.4 ou mais novo.

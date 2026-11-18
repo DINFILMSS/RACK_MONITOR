@@ -292,14 +292,22 @@ func deckCommand(id, action, name string) error {
 
 var cardNameRe = strings.NewReplacer(" ", "_", ":", "", "/", "", "\\", "", "\r", "", "\n", "")
 
+// cardName: exFAT aceita no máximo 11 caracteres no nome do volume; HFS+ bem mais.
+func cardName(name, fs string) string {
+	name = safeTok(cardNameRe.Replace(strings.TrimSpace(name)))
+	max := 11
+	if fs == "HFS+" { max = 27 }
+	if len(name) > max { name = strings.TrimRight(name[:max], "_-") }
+	return name
+}
+
 func deckFormat(id string, slot int, fs, name string) (string, error) {
 	v, ok := deckClients.Load(id)
 	if !ok { return "", fmt.Errorf("HyperDeck não encontrado") }
 	c := v.(*deckClient)
 	c.fmtMu.Lock(); defer c.fmtMu.Unlock()
 	if fs != "HFS+" { fs = "exFAT" }
-	name = cardNameRe.Replace(strings.TrimSpace(name))
-	if len(name) > 32 { name = name[:32] }
+	name = cardName(name, fs)
 	wait := make(chan block, 4)
 	c.mu.Lock(); c.fmtWait = wait; c.mu.Unlock()
 	defer func() { c.mu.Lock(); c.fmtWait = nil; c.mu.Unlock() }()
@@ -319,6 +327,12 @@ func deckFormat(id string, slot int, fs, name string) (string, error) {
 	if name != "" { cmd += " name: " + name }
 	if err := c.write(cmd); err != nil { return "", err }
 	tok, err := get()
+	if err != nil && name != "" {
+		// alguns firmwares recusam o nome (102 invalid value): tenta mantendo o nome atual
+		for len(wait) > 0 { <-wait }
+		if e := c.write(fmt.Sprintf("format: slot id: %d prepare: %s", slot, fs)); e != nil { return "", e }
+		if tok, err = get(); err == nil { name = "" }
+	}
 	if err != nil {
 		// firmwares antigos: seleciona o slot e usa a forma curta
 		c.write(fmt.Sprintf("slot select: slot id: %d", slot))
@@ -327,7 +341,10 @@ func deckFormat(id string, slot int, fs, name string) (string, error) {
 		short := "format: prepare: " + fs
 		if name != "" { short += " name: " + name }
 		if e := c.write(short); e != nil { return "", e }
-		if tok, err = get(); err != nil { return "", fmt.Errorf("formatação não aceita (%v)", err) }
+		if tok, err = get(); err != nil {
+			if strings.Contains(err.Error(), "102") { return "", fmt.Errorf("o gravador recusou (102 valor inválido): confira se o slot %d tem cartão montado", slot) }
+			return "", fmt.Errorf("formatação não aceita (%v)", err)
+		}
 	}
 	if err := c.write("format: confirm: " + tok); err != nil { return "", err }
 	return fmt.Sprintf("slot %d · %s%s", slot, fs, map[bool]string{true: " · nome " + name, false: ""}[name != ""]), nil

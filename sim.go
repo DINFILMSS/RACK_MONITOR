@@ -402,6 +402,8 @@ func (d *simDeck) serve(c net.Conn) {
 			d.notify()
 		case strings.HasPrefix(line, "format:") && strings.Contains(line, "prepare"):
 			out = "216 format ready:\r\nFMT7731\r\n\r\n"
+			// como o gravador real: exFAT com nome acima de 11 caracteres → 102
+			if i := strings.Index(line, "name: "); i >= 0 && strings.Contains(line, "exFAT") && len(strings.TrimSpace(line[i+6:])) > 11 { out = "102 invalid value\r\n" }
 			if i := strings.Index(line, "slot id:"); i >= 0 { fmt.Sscanf(line[i+8:], "%d", &d.fmtSlot) } else { d.fmtSlot = d.slot }
 		case strings.HasPrefix(line, "format: confirm: FMT7731"):
 			if d.rec { out = "105 disk full\r\n" } else {

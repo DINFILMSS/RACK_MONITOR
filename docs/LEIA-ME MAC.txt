@@ -1,4 +1,4 @@
-RACK MONITOR BY DON · V2.10.1 · macOS
+RACK MONITOR BY DON · V2.10.2 · macOS
 =====================================================================
 Funciona em Macs Intel e Apple Silicon (M1/M2/M3/M4), macOS 11 ou mais novo.
 
@@ -30,6 +30,10 @@ USAR
   "Iniciar o monitor junto com o Mac".
 • Dados, jobs e log: ~/Library/Application Support/DON_RACK_MONITOR/v2
   (CONFIGURAÇÃO → SISTEMA → ABRIR PASTA DE DADOS)
+
+CORREÇÃO NA V2.10.2
+• Formatar: nome do cartão em exFAT limitado a 11 caracteres (evita o
+  erro "102 invalid value").
 
 NOVO NA V2.10.1
 • Formatar cartão/SSD também no modo "Via Companion" (pela REST API do

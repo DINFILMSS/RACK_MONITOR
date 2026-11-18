@@ -293,8 +293,7 @@ func (h *Hub) routes(static fs.FS) *http.ServeMux {
 				var det string
 				if b.Media != "" || s.Via == "companion" {
 					if b.Media == "" { httpErr(w, 400, "Escolha a mídia a formatar."); return }
-					nm := cardNameRe.Replace(strings.TrimSpace(b.Name))
-					if len(nm) > 32 { nm = nm[:32] }
+					nm := cardName(b.Name, fs)
 					err = deckRESTFormat(hostPort(Device{Host: s.Host}), b.Media, fs, nm)
 					det = fmt.Sprintf("mídia %s · %s%s (REST API)", b.Media, fs, map[bool]string{true: " · nome " + nm, false: ""}[nm != ""])
 				} else {
