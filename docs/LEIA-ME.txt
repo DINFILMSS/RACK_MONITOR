@@ -1,9 +1,19 @@
-RACK MONITOR BY DON  ·  V2.10
+RACK MONITOR BY DON  ·  V2.10.1
 =====================================================================
 Monitor de rack de transmissão: ATEM, HyperDeck, VideoHub e qualquer
 equipamento IP. Um único arquivo .exe — sem instalador, sem .NET,
 sem compilação no Windows e SEM ATEM SDK.
 
+
+NOVO NA V2.10.1 — FORMATAR NO MODO "VIA COMPANION"
+---------------------------------------------------------------------
+• O botão FORMATAR CARTÃO / SSD agora funciona também nos HyperDecks
+  lidos "Via Companion": a formatação vai pela REST API do HyperDeck,
+  um canal separado que não derruba a conexão do Companion.
+• Precisa do firmware 8.4+ no HyperDeck. Se aparecer "REST API não
+  respondeu", atualize o firmware pelo Blackmagic HyperDeck Setup.
+• Como usar: 🔒 COMANDOS → liberar → card do HyperDeck → ⌫ FORMATAR
+  CARTÃO / SSD → escolher a mídia → digitar FORMATAR.
 
 NOVO NA V2.10 — ATUALIZAÇÃO AUTOMÁTICA
 ---------------------------------------------------------------------

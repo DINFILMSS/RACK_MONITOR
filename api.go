@@ -262,6 +262,7 @@ func (h *Hub) routes(static fs.FS) *http.ServeMux {
 			A      int    `json:"a"`
 			B      int    `json:"b"`
 			Name   string `json:"name"`
+			Media  string `json:"media"` // formatação pela REST API (nome interno da mídia)
 		}
 		if !readJSON(w, r, &b) { return }
 		if err := h.canControl(r); err != nil { httpErr(w, 403, err.Error()); return }
@@ -278,7 +279,7 @@ func (h *Hub) routes(static fs.FS) *http.ServeMux {
 			err = atemCommand(b.Device, b.Action, b.A, b.B)
 			desc = atemDesc(s, b.Action, b.A, b.B)
 		case "hyperdeck":
-			if s.Via == "companion" { httpErr(w, 409, "Este HyperDeck está em modo \"Via Companion\" (somente leitura). Comande pelo Companion."); return }
+			if s.Via == "companion" && b.Action != "format" { httpErr(w, 409, "Este HyperDeck está em modo \"Via Companion\" (somente leitura). Comande pelo Companion."); return }
 			if b.Action == "format" {
 				h.mu.Lock()
 				rec := s.Deck != nil && s.Deck.Recording()
@@ -290,7 +291,15 @@ func (h *Hub) routes(static fs.FS) *http.ServeMux {
 				fs := "exFAT"
 				if b.B == 1 { fs = "HFS+" }
 				var det string
-				det, err = deckFormat(b.Device, b.A, fs, b.Name)
+				if b.Media != "" || s.Via == "companion" {
+					if b.Media == "" { httpErr(w, 400, "Escolha a mídia a formatar."); return }
+					nm := cardNameRe.Replace(strings.TrimSpace(b.Name))
+					if len(nm) > 32 { nm = nm[:32] }
+					err = deckRESTFormat(hostPort(Device{Host: s.Host}), b.Media, fs, nm)
+					det = fmt.Sprintf("mídia %s · %s%s (REST API)", b.Media, fs, map[bool]string{true: " · nome " + nm, false: ""}[nm != ""])
+				} else {
+					det, err = deckFormat(b.Device, b.A, fs, b.Name)
+				}
 				if err == nil {
 					h.LogO(originOf(r), b.Device, s.Name, "MÍDIA FORMATADA", "crit", "Formatação enviada: "+det+". Todo o conteúdo do cartão/SSD foi apagado.", map[string]any{"slot": b.A})
 					writeJSON(w, ok()); return
@@ -329,6 +338,13 @@ func (h *Hub) routes(static fs.FS) *http.ServeMux {
 		marker(w, r, b.Label, b.Note)
 	})
 	m.HandleFunc("GET /api/marker", func(w http.ResponseWriter, r *http.Request) { marker(w, r, r.URL.Query().Get("label"), r.URL.Query().Get("note")) })
+	m.HandleFunc("GET /api/deckmedia/{id}", func(w http.ResponseWriter, r *http.Request) {
+		h.mu.Lock(); s := h.states[r.PathValue("id")]; h.mu.Unlock()
+		if s == nil { httpErr(w, 404, "equipamento não encontrado"); return }
+		list, err := deckRESTMedia(s.Host)
+		if err != nil { httpErr(w, 502, err.Error()); return }
+		writeJSON(w, list)
+	})
 	m.HandleFunc("GET /api/clipname/{id}", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, map[string]any{"name": h.PreviewClipName(r.PathValue("id"))})
 	})

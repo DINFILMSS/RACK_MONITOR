@@ -32,7 +32,7 @@ const (
 	regKey  = `HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\RackMonitorByDon`
 )
 
-var version = "2.10" // na compilação do GitHub vem da tag (-X main.version=…)
+var version = "2.10.1" // na compilação do GitHub vem da tag (-X main.version=…)
 
 var pMsg = syscall.NewLazyDLL("user32.dll").NewProc("MessageBoxW")
 

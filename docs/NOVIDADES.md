@@ -1,4 +1,9 @@
-## Novidades da V2.10
+## Novidades da V2.10.1
+
+- **Formatar cartão/SSD também no modo "Via Companion"**: quando o Companion ocupa a conexão do HyperDeck, a formatação agora vai pela **REST API** do HyperDeck (canal separado — não derruba o Companion). O botão **⌫ FORMATAR CARTÃO / SSD** aparece no card do gravador (com comandos liberados) e lista as mídias com nome, espaço livre e qual está ativa.
+- Requer firmware do HyperDeck 8.4 ou mais novo.
+
+## Da V2.10
 
 - **Atualização automática pelo GitHub**: o monitor procura versão nova ao abrir e a cada 6 horas. Quando tem, aparece **⬆ NOVA VERSÃO** no topo — um clique e ele baixa, confere (SHA-256) e reinicia sozinho. Sem desinstalar, sem instalar de novo. Configuração, jobs e relatórios são mantidos.
 - Opção de instalar sozinho (só quando nenhum gravador estiver em REC): CONFIGURAÇÃO → SISTEMA → ATUALIZAÇÕES.
