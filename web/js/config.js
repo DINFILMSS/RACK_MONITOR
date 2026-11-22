@@ -169,7 +169,7 @@ window.pfImport = async f => { try { const p = JSON.parse(await f.text()); await
 window.sysQuit = async () => {
   if (!(await confirmBox("ENCERRAR O MONITOR", "Parar o RACK MONITOR neste computador? Os alertas e a gravação de eventos param até abrir de novo. O job atual continua quando reabrir.", "ENCERRAR"))) return;
   await api("POST", "/api/system/shutdown").catch(() => { });
-  document.body.innerHTML = `<div style="display:flex;height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:10px;font-family:var(--f)"><img src="logo.png" style="width:90px;opacity:.6"><b style="letter-spacing:.14em">RACK MONITOR ENCERRADO</b><span style="color:#888">Abra pelo ícone do programa para voltar.</span></div>`;
+  document.body.innerHTML = `<div style="display:flex;height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:10px;font-family:var(--f)"><img src="logo.png" style="width:240px;opacity:.85"><b style="letter-spacing:.14em">RACK MONITOR ENCERRADO</b><span style="color:#888">Abra pelo ícone do programa para voltar.</span></div>`;
 };
 window.mailTest = async () => { try { await api("POST", "/api/email/test", CFG.email || {}); toast("E-mail de teste enviado.", "ok"); } catch (e) { toast(esc(e.message), "crit"); } };
 window.askNotif = async () => {

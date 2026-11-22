@@ -112,7 +112,7 @@ jobs:
           GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags "$LD" -o /tmp/m_amd64 .
           GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags "$LD" -o /tmp/m_arm64 .
           cp "docs/LEIA-ME MAC.txt" dist/
-          python3 tools/macbundle.py /tmp/m_amd64 /tmp/m_arm64 dist "$V" web/logo.png
+          python3 tools/macbundle.py /tmp/m_amd64 /tmp/m_arm64 dist "$V" web/icon-512.png
           rm -f "dist/LEIA-ME MAC.txt"
 
           # somas SHA-256: a atualização automática recusa arquivo que não confere

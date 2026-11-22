@@ -8,6 +8,7 @@
 - **Volta automática**: se a versão nova não abrir, ou cair nos primeiros minutos, o monitor volta sozinho para a anterior.
 - **Instalar sozinho** espera também a vigilância desarmada e longe dos horários da agenda.
 - **Canal beta** opcional para testar versões antes de liberar para todos.
+- **Visual novo com a identidade DON**: logo DON Broadcast Engineer no topo, nos relatórios, no ícone do programa (Windows e Mac) e no ícone do navegador; verde neon e prata no painel. Vermelho continua só para alerta, REC e PGM.
 - Atalhos do Windows criados sem PowerShell (menos alarmes de antivírus).
 - Corrigido: opções de atualização e modelo de nome dos clipes não eram salvos.
 

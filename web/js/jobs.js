@@ -63,7 +63,7 @@ async function vReport() {
   }).join("");
   $("#view").innerHTML = `<div class="noprint row"><a class="btn" href="#/jobs">← JOBS</a><a class="btn" href="#/resumo/${j.id}">VER RESUMO</a><span class="spacer"></span>${r.live ? `<button class="btn" onclick="staticRendered='';render()">ATUALIZAR</button>` : ""}<a class="btn" href="/api/jobs/${j.id}/csv">CSV</a><button class="btn red big" onclick="window.print()">IMPRIMIR / SALVAR PDF</button></div>
   <div class="report">
-    <div class="rh"><img src="logo.png" alt=""><div><h1>RELATÓRIO DE JOB DE TRANSMISSÃO</h1><div style="color:#666;letter-spacing:.12em;font-size:12px;font-weight:700">RACK MONITOR BY DON · V${esc(r.version)} · ${esc(r.station)}</div></div></div>
+    <div class="rh"><img src="logo-full.png" alt=""><div><h1>RELATÓRIO DE JOB DE TRANSMISSÃO</h1><div style="color:#666;letter-spacing:.12em;font-size:12px;font-weight:700">RACK MONITOR BY DON · V${esc(r.version)} · ${esc(r.station)}</div></div></div>
     <div class="meta"><div><span>JOB</span><b>${esc(j.name)}</b></div><div><span>CLIENTE</span>${esc(j.client || "—")}</div><div><span>LOCAL</span>${esc(j.venue || "—")}</div><div><span>OPERADOR</span>${esc(j.operator || "—")}</div>
       <div><span>INÍCIO</span>${dt(r.from)}</div><div><span>FIM</span>${r.live ? "em andamento (" + dt(r.to) + ")" : dt(r.to)}</div><div><span>GERADO EM</span>${dt(r.generated)}</div><div><span>ID</span>${esc(j.id)}</div></div>
     <div class="rk"><div><span>DURAÇÃO</span><b>${hms(r.seconds)}</b></div><div><span>CORTES NO PGM</span><b>${cuts}</b></div><div><span>TEMPO GRAVADO (SOMA)</span><b>${hms(recT)}</b></div><div><span>QUEDAS DE CONEXÃO</span><b class="${drops ? "crit" : ""}">${drops}</b></div><div><span>EVENTOS CRÍTICOS</span><b class="${r.counts.crit ? "crit" : ""}">${r.counts.crit || 0}</b></div></div>
@@ -102,7 +102,7 @@ async function vResumo() {
   };
   $("#view").innerHTML = `<div class="noprint row"><a class="btn" href="#/jobs">← JOBS</a><a class="btn ghost" href="#/report/${j.id}">RELATÓRIO COMPLETO</a><span class="spacer"></span>${r.live ? `<button class="btn" onclick="staticRendered='';render()">ATUALIZAR</button>` : ""}<a class="btn" href="/api/jobs/${j.id}/resumo.csv">CSV DO RESUMO</a><button class="btn red big" onclick="window.print()">IMPRIMIR / PDF</button></div>
   <div class="report resumo">
-    <div class="rh"><img src="logo.png" alt=""><div style="flex:1"><h1>RESUMO DO JOB</h1><div style="font-size:15px;font-weight:700;margin-top:2px">${esc(j.name)}</div><div style="color:#666;font-size:12px">${esc([j.client, j.venue, j.operator].filter(Boolean).join(" · "))}</div></div>
+    <div class="rh"><img src="logo-full.png" alt=""><div style="flex:1"><h1>RESUMO DO JOB</h1><div style="font-size:15px;font-weight:700;margin-top:2px">${esc(j.name)}</div><div style="color:#666;font-size:12px">${esc([j.client, j.venue, j.operator].filter(Boolean).join(" · "))}</div></div>
       <div style="text-align:right;font-size:12px;color:#555">${dt(r.from).slice(0, 16)} → ${r.live ? "em andamento" : dt(r.to).slice(11, 16)}<br><b style="font-size:20px;color:#111">${hms(r.seconds)}</b></div></div>
     <div class="rk"><div><span>INPUTS USADOS</span><b>${used.size}</b></div><div><span>CORTES NO PGM</span><b>${cuts}</b></div><div><span>TEMPO GRAVADO</span><b>${hms(recT)}</b></div><div><span>QUEDAS</span><b class="${drops ? "crit" : ""}">${drops}</b></div><div><span>CRÍTICOS</span><b class="${r.counts.crit ? "crit" : ""}">${r.counts.crit || 0}</b></div></div>
     <div class="rs-grid">${mes.map(meBlock).join("") || `<div>Nenhuma troca de PGM registrada neste job.</div>`}</div>
@@ -139,7 +139,7 @@ async function vInventario() {
   };
   $("#view").innerHTML = `<div class="noprint row"><a class="btn" href="#/jobs">← JOBS</a><a class="btn ghost" href="#/gravacoes">GRAVADORES</a><span class="spacer"></span>${r.live ? `<button class="btn" onclick="staticRendered='';render()">LER CARTÕES DE NOVO</button>` : ""}<a class="btn" href="/api/jobs/${esc(id)}/inventario.csv">CSV</a><button class="btn red big" onclick="window.print()">IMPRIMIR / PDF</button></div>
   <div class="report resumo inv">
-    <div class="rh"><img src="logo.png" alt=""><div style="flex:1"><h1>INVENTÁRIO DE CARTÕES</h1><div style="font-size:15px;font-weight:700;margin-top:2px">${esc(j.name || "")}</div><div style="color:#666;font-size:12px">${esc([j.client, j.venue, j.operator].filter(Boolean).join(" · "))}</div></div>
+    <div class="rh"><img src="logo-full.png" alt=""><div style="flex:1"><h1>INVENTÁRIO DE CARTÕES</h1><div style="font-size:15px;font-weight:700;margin-top:2px">${esc(j.name || "")}</div><div style="color:#666;font-size:12px">${esc([j.client, j.venue, j.operator].filter(Boolean).join(" · "))}</div></div>
       <div style="text-align:right;font-size:12px;color:#555">${r.live ? "lido agora" : "foto tirada ao encerrar o job"}<br>${dt(r.generated).slice(0, 16)}</div></div>
     <div class="rk"><div><span>GRAVADORES</span><b>${D.length}</b></div><div><span>CLIPES NOS CARTÕES</span><b>${tclips}</b></div><div><span>DURAÇÃO NOS CARTÕES</span><b>${hms(tsec)}</b></div><div><span>TEMPO EM REC NO JOB</span><b>${hms(trec)}</b></div></div>
     ${r.snapshot ? "" : `<div class="inv-note">Lista de clipes não disponível para este job (encerrado em versão anterior). Abaixo, só as gravações registradas no log.</div>`}
@@ -199,7 +199,7 @@ function vIO() {
   <div class="noprint card" style="margin-bottom:12px"><div class="row"><b style="letter-spacing:.1em">INCLUIR:</b>${L.map(d => `<label class="chk"><input type="checkbox" ${ioSel.has(d.id) ? "checked" : ""} onchange="ioSel[this.checked?'add':'delete']('${d.id}');staticRendered='';render()">${esc(d.name)}</label>`).join("")}</div>
     <div class="row" style="margin-top:10px"><a class="btn" href="#/jobs">← JOBS</a><button class="btn" onclick="staticRendered='';render()">ATUALIZAR AGORA</button><span class="spacer"></span><button class="btn" onclick="ioCSV()">BAIXAR CSV</button><button class="btn red big" onclick="window.print()">IMPRIMIR / PDF</button></div></div>
   <div class="report">
-    <div class="rh"><img src="logo.png" alt=""><div><h1>ENTRADAS E SAÍDAS · ATEM + VIDEOHUB</h1><div style="color:#666;letter-spacing:.12em;font-size:12px;font-weight:700">FOTO DO PATCH EM ${dt(new Date())} · ${esc(S.station)}${S.job ? " · " + esc(S.job.name) : ""}</div></div></div>
+    <div class="rh"><img src="logo-full.png" alt=""><div><h1>ENTRADAS E SAÍDAS · ATEM + VIDEOHUB</h1><div style="color:#666;letter-spacing:.12em;font-size:12px;font-weight:700">FOTO DO PATCH EM ${dt(new Date())} · ${esc(S.station)}${S.job ? " · " + esc(S.job.name) : ""}</div></div></div>
     ${sel.map(block).join("") || `<div style="margin-top:20px">Selecione ao menos um equipamento.</div>`}
     <div class="note">Nomes e rotas lidos ao vivo dos equipamentos no momento da geração. Numeração das VideoHubs começa em 1 (como no painel da Blackmagic).</div>
   </div>`;
