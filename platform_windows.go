@@ -10,6 +10,8 @@ import (
 	"strings"
 	"syscall"
 	"unsafe"
+
+	"rackdon/internal/winlnk"
 )
 
 var (
@@ -49,6 +51,7 @@ func powershell(script string) error {
 func psq(s string) string { return "'" + strings.ReplaceAll(s, "'", "''") + "'" }
 
 func makeShortcut(lnk, target, args, workdir, desc string) error {
+	if err := winlnk.Create(lnk, target, args, workdir, desc); err == nil { return nil }
 	return powershell(fmt.Sprintf(`$s=(New-Object -ComObject WScript.Shell).CreateShortcut(%s);$s.TargetPath=%s;$s.Arguments=%s;$s.WorkingDirectory=%s;$s.Description=%s;$s.IconLocation=%s;$s.Save()`,
 		psq(lnk), psq(target), psq(args), psq(workdir), psq(desc), psq(target+",0")))
 }

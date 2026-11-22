@@ -18,6 +18,8 @@ import (
 	"syscall"
 	"time"
 	"unsafe"
+
+	"rackdon/internal/winlnk"
 )
 
 //go:embed payload/RackMonitorByDon.exe
@@ -32,7 +34,7 @@ const (
 	regKey  = `HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\RackMonitorByDon`
 )
 
-var version = "2.10.2" // na compilação do GitHub vem da tag (-X main.version=…)
+var version = "2.11" // na compilação do GitHub vem da tag (-X main.version=…)
 
 var pMsg = syscall.NewLazyDLL("user32.dll").NewProc("MessageBoxW")
 
@@ -52,6 +54,8 @@ func psq(s string) string { return "'" + strings.ReplaceAll(s, "'", "''") + "'" 
 
 func shortcut(lnk, target, args, workdir, desc string) error {
 	_ = os.MkdirAll(filepath.Dir(lnk), 0o755)
+	if err := winlnk.Create(lnk, target, args, workdir, desc); err == nil { return nil }
+	// reserva: PowerShell (só se a COM falhar)
 	script := fmt.Sprintf(`$s=(New-Object -ComObject WScript.Shell).CreateShortcut(%s);$s.TargetPath=%s;$s.Arguments=%s;$s.WorkingDirectory=%s;$s.Description=%s;$s.IconLocation=%s;$s.Save()`,
 		psq(lnk), psq(target), psq(args), psq(workdir), psq(desc), psq(target+",0"))
 	out, err := hidden(exec.Command("powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", script)).CombinedOutput()
@@ -94,6 +98,8 @@ func main() {
 	}
 	if err != nil { fail("Não foi possível gravar o programa (ele ainda está aberto?).\n\n" + err.Error()) }
 	_ = os.WriteFile(filepath.Join(dir, "LEIA-ME.txt"), readme, 0o644)
+	// restos de uma atualização automática anterior não valem para esta instalação
+	for _, ext := range []string{".old", ".new", ".bad", ".pending"} { _ = os.Remove(exe + ext) }
 
 	menu := filepath.Join(os.Getenv("APPDATA"), `Microsoft\Windows\Start Menu\Programs`, title)
 	home, _ := os.UserHomeDir()

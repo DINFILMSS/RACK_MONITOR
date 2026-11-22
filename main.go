@@ -19,7 +19,7 @@ import (
 	"time"
 )
 
-var AppVersion = "2.10.2" // na compilação do GitHub vem da tag (-X main.AppVersion=…)
+var AppVersion = "2.11" // na compilação do GitHub vem da tag (-X main.AppVersion=…)
 
 //go:embed web
 var webFS embed.FS
@@ -64,6 +64,7 @@ func main() {
 	h := newHub(cfg, paths, *demo)
 	globalHub = h
 	h.StartupJob()
+	h.noteRollback()
 	for _, n := range notes { h.Log("", "RACK MONITOR", "MIGRAÇÃO", "info", n, nil) }
 	h.Log("", "RACK MONITOR", "MONITOR INICIADO", "info", fmt.Sprintf("V%s em %s · %d equipamentos", AppVersion, cfg.StationName, len(cfg.Devices)), nil)
 	h.applyDevices()
@@ -93,9 +94,14 @@ func main() {
 	if !*noBrowser { go func() { time.Sleep(600 * time.Millisecond); openBrowser(url) }() }
 	mux := h.routes(static)
 	h.systemRoutes(mux)
-	srv := &http.Server{Handler: mux, ReadHeaderTimeout: 10 * time.Second}
-	log.Fatal(srv.Serve(ln))
+	srv := &http.Server{Handler: h.guard(mux), ReadHeaderTimeout: 10 * time.Second}
+	httpSrv = srv
+	go confirmUpdate()
+	if err := srv.Serve(ln); err != nil && err != http.ErrServerClosed { log.Fatal(err) }
+	select {} // servidor fechado pela atualização: o processo termina por ela
 }
+
+var httpSrv *http.Server
 
 func openBrowser(url string) {
 	var cmd *exec.Cmd
