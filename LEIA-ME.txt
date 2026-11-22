@@ -1,2 +1,2 @@
-Instalador de teste da V2.11 (compilado da branch claude/hopeful-bohr-if1se1, sem assinatura digital).
-SHA-256: 46bf6757d8ac0b62be37838b6c862873ce7e827d56d33561828dec025d40b3eb
+Instalador de teste da V2.11 com o visual novo DON (compilado da branch claude/hopeful-bohr-if1se1, sem assinatura digital).
+SHA-256: f7e349c063d66a37f50cd1d27fb8a1e7099a26e533d75ba7747b345f4ed213a7
