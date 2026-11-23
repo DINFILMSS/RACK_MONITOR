@@ -5,6 +5,16 @@
 #   • crie uma release/tag "v2.11" no site (Releases → Draft a new release).
 # Este fluxo compila Windows + Mac, confere tudo e publica a release.
 # Os programas já instalados enxergam a versão nova e se atualizam sozinhos.
+#
+# Versão com hífen (ex.: 2.11-beta1) sai como PRE-RELEASE: só os monitores com
+# "Receber versões de teste (beta)" ligado enxergam.
+#
+# Secrets (Settings → Secrets and variables → Actions):
+#   UPDATE_SIGNING_KEY     OBRIGATÓRIO. Chave privada ed25519 que assina o SHA256SUMS.txt.
+#                          Sem ela a publicação para (os monitores recusariam a versão).
+#   WINDOWS_CERT_PFX       opcional. Certificado de assinatura de código (.pfx em base64).
+#   WINDOWS_CERT_PASSWORD  opcional. Senha do .pfx.
+#   Com os dois, o programa e o instalador saem assinados (sem o aviso azul do Windows).
 
 name: Publicar versão
 
@@ -61,15 +71,30 @@ jobs:
         if: steps.ver.outputs.skip != '1'
         run: pip install pillow
 
-      - name: Testes básicos
+      - name: Chave de assinatura presente
         if: steps.ver.outputs.skip != '1'
-        run: go vet . && GOOS=windows go vet . && GOOS=darwin go vet .
+        env:
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+        run: |
+          if [ -z "$UPDATE_SIGNING_KEY" ]; then
+            echo "::error::Falta o secret UPDATE_SIGNING_KEY (Settings → Secrets and variables → Actions). Sem ele os monitores instalados recusam a atualização."
+            exit 1
+          fi
+
+      - name: Testes
+        if: steps.ver.outputs.skip != '1'
+        run: |
+          go vet ./... && GOOS=windows go vet . ./internal/... && GOOS=darwin go vet .
+          go test ./...
+          for f in web/js/*.js; do node --check "$f"; done
 
       - name: Compilar Windows e Mac
         if: steps.ver.outputs.skip != '1'
         env:
           TAG: ${{ steps.ver.outputs.tag }}
           REPO: ${{ github.repository }}
+          WINDOWS_CERT_PFX: ${{ secrets.WINDOWS_CERT_PFX }}
+          WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
         run: |
           V="${TAG#v}"
           LD="-s -w -X main.AppVersion=$V -X main.UpdateRepo=$REPO"
@@ -77,19 +102,31 @@ jobs:
 
           # Windows: programa (usado pela atualização automática) + instalador
           GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "$LD -H windowsgui" -o dist/RackMonitorByDon_windows.exe .
+          ./.github/assinar-windows.sh dist/RackMonitorByDon_windows.exe
           cp dist/RackMonitorByDon_windows.exe installer/payload/RackMonitorByDon.exe
           cp docs/LEIA-ME.txt installer/payload/LEIA-ME.txt
           (cd installer && GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "-s -w -H windowsgui -X main.version=$V" -o "../dist/RACK_MONITOR_BY_DON_V${V}_Instalador_Windows.exe" .)
+          ./.github/assinar-windows.sh "dist/RACK_MONITOR_BY_DON_V${V}_Instalador_Windows.exe"
 
           # Mac: binário universal (Intel + Apple Silicon) + zip com os apps
           GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags "$LD" -o /tmp/m_amd64 .
           GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags "$LD" -o /tmp/m_arm64 .
           cp "docs/LEIA-ME MAC.txt" dist/
-          python3 tools/macbundle.py /tmp/m_amd64 /tmp/m_arm64 dist "$V" web/logo.png
+          python3 tools/macbundle.py /tmp/m_amd64 /tmp/m_arm64 dist "$V" web/icon-512.png
           rm -f "dist/LEIA-ME MAC.txt"
 
           # somas SHA-256: a atualização automática recusa arquivo que não confere
-          cd dist && sha256sum * > ../SHA256SUMS.txt && mv ../SHA256SUMS.txt . && cat SHA256SUMS.txt
+          (cd dist && sha256sum * > ../SHA256SUMS.txt && mv ../SHA256SUMS.txt . && cat SHA256SUMS.txt)
+
+      - name: Assinar a lista de somas (ed25519)
+        if: steps.ver.outputs.skip != '1'
+        env:
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+        run: |
+          go run ./tools/assinar dist/SHA256SUMS.txt
+          # confere se a chave do secret é a mesma embutida no programa
+          PUB=$(go run ./tools/assinar dist/SHA256SUMS.txt | sed -n 's/^chave pública: //p')
+          grep -q "updatePubKey = \"$PUB\"" updater.go || { echo "::error::UPDATE_SIGNING_KEY não corresponde à updatePubKey de updater.go"; exit 1; }
 
       - name: Publicar arquivos na release
         if: steps.ver.outputs.skip != '1'
@@ -101,5 +138,7 @@ jobs:
             gh release upload "$TAG" dist/* --clobber
           else
             NOTES=docs/NOVIDADES.md
-            gh release create "$TAG" dist/* --target "$GITHUB_SHA" --title "RACK MONITOR BY DON $TAG" --notes-file "$NOTES"
+            PRE=""
+            if [[ "$TAG" == *-* ]]; then PRE="--prerelease"; fi
+            gh release create "$TAG" dist/* $PRE --target "$GITHUB_SHA" --title "RACK MONITOR BY DON $TAG" --notes-file "$NOTES"
           fi

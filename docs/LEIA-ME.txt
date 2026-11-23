@@ -1,9 +1,42 @@
-RACK MONITOR BY DON  ·  V2.10.2
+RACK MONITOR BY DON  ·  V2.11
 =====================================================================
 Monitor de rack de transmissão: ATEM, HyperDeck, VideoHub e qualquer
 equipamento IP. Um único arquivo .exe — sem instalador, sem .NET,
 sem compilação no Windows e SEM ATEM SDK.
 
+
+NOVO NA V2.11 — SEGURANÇA E ATUALIZAÇÃO MAIS SEGURA
+---------------------------------------------------------------------
+• SENHA DE ADMINISTRADOR (CONFIGURAÇÃO → COMANDOS FÍSICOS, no PC do
+  rack). Tablets e celulares continuam vendo tudo, mas para ALTERAR a
+  configuração (equipamentos, perfis, AUX, rotas protegidas) por outro
+  aparelho é preciso digitar essa senha. Sem senha definida, só o
+  computador do rack altera a configuração.
+• FORMATAR agora exige o PIN de comandos (defina o PIN antes).
+• Senha do e-mail e token do Telegram não são mais enviados para o
+  navegador. Deixe o campo em branco para manter o que está salvo.
+• Um site aberto no navegador do rack não consegue mais mandar
+  comandos para o monitor. O painel só responde pelo IP, por
+  "localhost", pelo nome do computador ou por *.local. Se você acessa
+  por outro nome DNS (ex.: rack.empresa.com.br), inclua-o em
+  "allowedHosts" no config.json:  "allowedHosts": ["rack.empresa.com.br"]
+• 5 tentativas erradas de PIN ou senha travam aquele aparelho por 1 min.
+• ATUALIZAÇÃO ASSINADA: o monitor só instala uma versão nova se a
+  assinatura digital da publicação conferir. Um arquivo trocado no
+  meio do caminho, ou publicado por quem não tem a chave, é recusado.
+• VOLTA SOZINHO: se a versão nova não abrir em 60 s, ou cair várias
+  vezes nos primeiros 10 minutos, o monitor volta para a versão
+  anterior, avisa na linha do tempo e não tenta instalar aquela versão
+  sozinho de novo.
+• "Instalar sozinho" agora espera também a vigilância estar desarmada
+  e não estar a menos de 30 min de um horário da agenda.
+• KEYS E DSK: a aba ATEM mostra cada USK (tipo, fonte, NO AR, "entra/sai
+  no próximo") e cada DSK (fonte, NO AR, TIE). No PAINEL aparece o que
+  está no ar. Companion: meN_keyN, meN_keyN_src, dskN, dskN_src.
+• Versões de teste (beta): CONFIGURAÇÃO → SISTEMA → ATUALIZAÇÕES →
+  "Receber versões de teste". Use só num computador de testes.
+• Corrigido: as opções de ATUALIZAÇÕES e o modelo de nome dos clipes
+  não eram gravados ao clicar em SALVAR CONFIGURAÇÃO.
 
 CORREÇÃO NA V2.10.2 — FORMATAR ("102 invalid value")
 ---------------------------------------------------------------------
@@ -250,7 +283,7 @@ NOVO NA V2.3
   EXTERNO — o protocolo Blackmagic não informa o IP de quem trocou.
 • FORMATAR CARTÃO/SSD (HyperDeck), com comandos liberados:
   bloqueado se o gravador estiver em REC ou vigiado com a vigilância
-  armada; escolhe slot, exFAT/HFS+ e nome; exige digitar FORMATAR;
+  armada; escolhe slot, exFAT/HFS+ e nome; exige o PIN e digitar FORMATAR;
   fica registrado como evento crítico com a origem.
 • AUX: as mudanças em CONFIGURAÇÃO → AUX DAS ATEMs salvam na hora
   (antes precisava clicar em SALVAR). "Ignorar os sem nome" avisa
@@ -395,7 +428,8 @@ COMANDOS FÍSICOS (DESLIGADOS DE FÁBRICA)
   REC/STOP nos HyperDecks (clipe com o nome do job), "REC em todos os
   vigiados", rotear/restaurar saídas da VideoHub.
   Proteções: precisam ser LIBERADOS no botão 🔒 (expira sozinho),
-  PIN opcional, só do PC local (a menos que você permita), confirmação
+  PIN (obrigatório para formatar), só do PC local (a menos que você
+  permita), confirmação
   em cada comando crítico, tudo registrado na linha do tempo.
 
 

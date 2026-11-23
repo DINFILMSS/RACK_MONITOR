@@ -104,6 +104,10 @@ type Config struct {
 	UpdateRepo        string           `json:"updateRepo"`     // usuario/repositorio no GitHub
 	UpdateCheckOff    bool             `json:"updateCheckOff"` // não procurar versões novas
 	UpdateAuto        bool             `json:"updateAuto"`     // instalar sozinho (só sem REC)
+	UpdateBeta        bool             `json:"updateBeta"`     // receber versões de teste (pre-release)
+	UpdateBadVersion  string           `json:"updateBadVersion,omitempty"` // versão que falhou e foi desfeita: não instala sozinho de novo
+	AdminPIN          string           `json:"adminPin"`       // senha para alterar a configuração por outro aparelho
+	AllowedHosts      []string         `json:"allowedHosts,omitempty"` // nomes DNS extras pelos quais o painel pode ser acessado
 	ControlEnabled    bool             `json:"controlEnabled"`
 	AllowRemoteControl bool            `json:"allowRemoteControl"`
 	ControlPIN        string           `json:"controlPin"`

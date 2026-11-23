@@ -36,8 +36,7 @@ def icns(out):
         bg = Image.new('RGBA', (n, n), (0, 0, 0, 0))
         dr = ImageDraw.Draw(bg)
         m = int(n * .09); r = int(n * .2)
-        dr.rounded_rectangle([m, m, n - m, n - m], r, fill=(12, 13, 16, 255))
-        im = src.copy(); im.thumbnail((int(n * .72), int(n * .72)), Image.LANCZOS)
+        im = src.copy(); im.thumbnail((n, n), Image.LANCZOS)
         bg.paste(im, ((n - im.width) // 2, (n - im.height) // 2), im)
         b = io.BytesIO(); bg.save(b, 'PNG'); return b.getvalue()
     ents = b''

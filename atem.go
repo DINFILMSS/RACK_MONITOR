@@ -232,7 +232,7 @@ func (c *atemClient) parse(body []byte) {
 		s.LastSeen = time.Now()
 		me := func(i int) *AtemME {
 			m, ok := a.MEs[i]
-			if !ok { m = &AtemME{Program: -1, Preview: -1, Keys: map[int]bool{}}; a.MEs[i] = m }
+			if !ok { m = &AtemME{Program: -1, Preview: -1, Keys: map[int]bool{}, KeyInfo: map[int]*AtemKey{}}; a.MEs[i] = m }
 			return m
 		}
 		for off := 0; off+8 <= len(body); {
@@ -307,15 +307,32 @@ func (c *atemClient) parse(body []byte) {
 				m := me(u8(d, 0))
 				k, on := u8(d, 1), u8(d, 2) == 1
 				if m.Keys[k] != on && a.Ready {
-					logs = append(logs, atemLog{"KEY", "info", fmt.Sprintf("M/E %d USK %d %s", u8(d, 0)+1, k+1, onOff(on)), nil})
+					logs = append(logs, atemLog{"KEY", "info", fmt.Sprintf("M/E %d USK %d %s%s", u8(d, 0)+1, k+1, onOff(on), a.keyDesc(m.KeyInfo[k])),
+						map[string]any{"me": u8(d, 0), "key": k, "onAir": on}})
 				}
 				m.Keys[k] = on
+			case "KeBP": // tipo e fontes do upstream key
+				if len(d) >= 10 {
+					m := me(u8(d, 0))
+					k := u8(d, 1)
+					m.KeyInfo[k] = &AtemKey{Type: keyTypeName(u8(d, 2)), Fly: u8(d, 5) == 1, Fill: u16(d, 6), Key: u16(d, 8)}
+				}
+			case "TrSS": // o que entra/sai na próxima transição
+				if len(d) >= 3 { me(u8(d, 0)).Next = u8(d, 2) & 0x1f }
 			case "DskS":
 				k, on := u8(d, 0), u8(d, 1) == 1
+				ds := a.dsk(k)
 				if a.DSK[k] != on && a.Ready {
-					logs = append(logs, atemLog{"DSK", "info", fmt.Sprintf("DSK %d %s", k+1, onOff(on)), nil})
+					desc := ""
+					if ds.Fill > 0 || ds.Key > 0 { desc = " · " + a.Name(ds.Fill) }
+					logs = append(logs, atemLog{"DSK", "info", fmt.Sprintf("DSK %d %s%s", k+1, onOff(on), desc), map[string]any{"dsk": k, "onAir": on}})
 				}
 				a.DSK[k] = on
+				ds.InTrans, ds.Auto = u8(d, 2) == 1, u8(d, 3) == 1
+			case "DskB": // fontes do DSK
+				if len(d) >= 6 { ds := a.dsk(u8(d, 0)); ds.Fill, ds.Key = u16(d, 2), u16(d, 4) }
+			case "DskP": // propriedades do DSK (TIE)
+				if len(d) >= 2 { a.dsk(u8(d, 0)).Tie = u8(d, 1) == 1 }
 			case "TlSr":
 				n := u16(d, 0)
 				for i := 0; i < n; i++ {
@@ -402,6 +419,30 @@ func (c *atemClient) parse(body []byte) {
 }
 
 func onOff(b bool) string { if b { return "NO AR" }; return "FORA" }
+
+func keyTypeName(t int) string {
+	switch t {
+	case 0: return "LUMA"
+	case 1: return "CHROMA"
+	case 2: return "PATTERN"
+	case 3: return "DVE"
+	}
+	return fmt.Sprintf("TIPO %d", t)
+}
+
+func (a *AtemState) dsk(k int) *AtemDSK {
+	if a.DSKInfo == nil { a.DSKInfo = map[int]*AtemDSK{} }
+	d := a.DSKInfo[k]
+	if d == nil { d = &AtemDSK{}; a.DSKInfo[k] = d }
+	return d
+}
+
+// keyDesc: " · LUMA · GC VMIX" (vazio se ainda não chegou a informação do key)
+func (a *AtemState) keyDesc(k *AtemKey) string {
+	if k == nil { return "" }
+	if k.Type == "PATTERN" { return " · PATTERN" }
+	return " · " + k.Type + " · " + a.Name(k.Fill)
+}
 
 // ---------- comandos (somente com controle liberado e armado) ----------
 

@@ -29,7 +29,7 @@ func (h *Hub) routes(static fs.FS) *http.ServeMux {
 		w.Write(h.Snapshot())
 	})
 	m.HandleFunc("GET /api/whoami", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, map[string]any{"local": isLocal(r), "canControl": h.canControl(r) == nil, "addr": r.RemoteAddr})
+		writeJSON(w, map[string]any{"local": isLocal(r), "canControl": h.canControl(r) == nil, "addr": r.RemoteAddr, "version": AppVersion})
 	})
 	m.HandleFunc("GET /api/events", func(w http.ResponseWriter, r *http.Request) {
 		min := r.URL.Query().Get("min")
@@ -68,14 +68,17 @@ func (h *Hub) routes(static fs.FS) *http.ServeMux {
 	// ---- configuração ----
 	m.HandleFunc("GET /api/config", func(w http.ResponseWriter, r *http.Request) {
 		cfgMu.RLock(); c := *h.cfg; cfgMu.RUnlock()
-		pin := c.ControlPIN != ""
-		c.ControlPIN = ""
-		writeJSON(w, map[string]any{"config": c, "pinSet": pin, "local": isLocal(r), "dataDir": h.paths.Root})
+		// senhas e tokens nunca saem do computador do rack
+		pin, adm := c.ControlPIN != "", c.AdminPIN != ""
+		tg, em := c.Telegram.Token != "", c.Email.Pass != ""
+		c.ControlPIN, c.AdminPIN, c.Telegram.Token, c.Email.Pass = "", "", "", ""
+		writeJSON(w, map[string]any{"config": c, "pinSet": pin, "adminPinSet": adm, "telegramTokenSet": tg, "emailPassSet": em, "local": isLocal(r), "dataDir": h.paths.Root})
 	})
 	m.HandleFunc("PUT /api/config", func(w http.ResponseWriter, r *http.Request) {
 		var in struct {
 			Config
-			NewPIN *string `json:"newPin"`
+			NewPIN      *string `json:"newPin"`
+			NewAdminPIN *string `json:"newAdminPin"`
 		}
 		if !readJSON(w, r, &in) { return }
 		cfgMu.Lock()
@@ -89,16 +92,28 @@ func (h *Hub) routes(static fs.FS) *http.ServeMux {
 		c.AuxCfg = in.AuxCfg
 		c.Companion = in.Companion
 		c.WebhookURL = strings.TrimSpace(in.WebhookURL)
+		// token/senha em branco = manter o que já está salvo (o painel não recebe esses valores)
+		tgTok, emPass := c.Telegram.Token, c.Email.Pass
 		c.Telegram = in.Telegram
+		if strings.TrimSpace(c.Telegram.Token) == "" { c.Telegram.Token = tgTok }
 		c.Schedule = in.Schedule
 		c.MarkerPresets = in.MarkerPresets
 		c.TSL = in.TSL
 		c.Email = in.Email
+		if c.Email.Pass == "" { c.Email.Pass = emPass }
 		c.ReportOnClose = in.ReportOnClose
+		c.ClipTemplate = in.ClipTemplate
+		c.ClipNameOff = in.ClipNameOff
 		if isLocal(r) {
 			c.ControlEnabled = in.ControlEnabled
 			c.AllowRemoteControl = in.AllowRemoteControl
 			if in.NewPIN != nil { c.ControlPIN = strings.TrimSpace(*in.NewPIN) }
+			if in.NewAdminPIN != nil { c.AdminPIN = strings.TrimSpace(*in.NewAdminPIN) }
+			c.UpdateRepo = strings.TrimSpace(in.UpdateRepo)
+			c.UpdateCheckOff = in.UpdateCheckOff
+			c.UpdateAuto = in.UpdateAuto
+			if c.UpdateBeta != in.UpdateBeta { c.UpdateBadVersion = "" }
+			c.UpdateBeta = in.UpdateBeta
 		}
 		normalize(c)
 		err := saveConfig(h.paths, c)
@@ -244,7 +259,9 @@ func (h *Hub) routes(static fs.FS) *http.ServeMux {
 		if !readJSON(w, r, &b) { return }
 		if err := h.canControl(r); err != nil { httpErr(w, 403, err.Error()); return }
 		cfgMu.RLock(); pin := h.cfg.ControlPIN; cfgMu.RUnlock()
-		if pin != "" && b.PIN != pin { h.LogO(originOf(r), "", "RACK MONITOR", "PIN INCORRETO", "warn", "Tentativa de liberar comandos com PIN errado", nil); httpErr(w, 403, "PIN incorreto."); return }
+		if pin != "" {
+			if msg := checkSecret(r, pin, b.PIN, "PIN incorreto."); msg != "" { h.LogO(originOf(r), "", "RACK MONITOR", "PIN INCORRETO", "warn", "Tentativa de liberar comandos: "+msg, nil); httpErr(w, 403, msg); return }
+		}
 		if b.Seconds <= 0 || b.Seconds > 600 { b.Seconds = 120 }
 		h.mu.Lock(); h.ctrlUntil = time.Now().Add(time.Duration(b.Seconds) * time.Second); h.dirty = true; h.mu.Unlock()
 		h.LogO(originOf(r), "", "RACK MONITOR", "COMANDOS LIBERADOS", "warn", fmt.Sprintf("Comandos físicos liberados por %d s.", b.Seconds), nil)
@@ -263,6 +280,7 @@ func (h *Hub) routes(static fs.FS) *http.ServeMux {
 			B      int    `json:"b"`
 			Name   string `json:"name"`
 			Media  string `json:"media"` // formatação pela REST API (nome interno da mídia)
+			PIN    string `json:"pin"`   // obrigatório para formatar
 		}
 		if !readJSON(w, r, &b) { return }
 		if err := h.canControl(r); err != nil { httpErr(w, 403, err.Error()); return }
@@ -288,6 +306,9 @@ func (h *Hub) routes(static fs.FS) *http.ServeMux {
 				h.mu.Unlock()
 				if rec { httpErr(w, 409, "Este gravador está EM REC. Pare a gravação antes de formatar."); return }
 				if watched { httpErr(w, 409, "Gravador vigiado com a vigilância ARMADA. Desarme a vigilância antes de formatar."); return }
+				cfgMu.RLock(); pin := h.cfg.ControlPIN; cfgMu.RUnlock()
+				if pin == "" { httpErr(w, 403, "Formatar apaga o cartão: defina antes um PIN em CONFIGURAÇÃO → COMANDOS FÍSICOS (no computador do rack)."); return }
+				if msg := checkSecret(r, pin, b.PIN, "PIN incorreto."); msg != "" { h.LogO(originOf(r), b.Device, s.Name, "FORMATAÇÃO RECUSADA", "warn", msg, nil); httpErr(w, 403, msg); return }
 				fs := "exFAT"
 				if b.B == 1 { fs = "HFS+" }
 				var det string
@@ -428,6 +449,7 @@ func (h *Hub) routes(static fs.FS) *http.ServeMux {
 	m.HandleFunc("POST /api/telegram/test", func(w http.ResponseWriter, r *http.Request) {
 		var t Telegram
 		if !readJSON(w, r, &t) { return }
+		if t.Token == "" { cfgMu.RLock(); t.Token = h.cfg.Telegram.Token; cfgMu.RUnlock() }
 		if err := sendTelegram(t, "✅ RACK MONITOR BY DON conectado ao Telegram — "+h.cfg.StationName); err != nil { httpErr(w, 400, err.Error()); return }
 		writeJSON(w, ok())
 	})
@@ -515,6 +537,7 @@ func (h *Hub) routes(static fs.FS) *http.ServeMux {
 	m.HandleFunc("POST /api/email/test", func(w http.ResponseWriter, r *http.Request) {
 		var e EmailCfg
 		if !readJSON(w, r, &e) { return }
+		if e.Pass == "" { cfgMu.RLock(); e.Pass = h.cfg.Email.Pass; cfgMu.RUnlock() }
 		if err := sendEmail(e, "Teste · RACK MONITOR BY DON", "<p>E-mail de teste do <b>RACK MONITOR BY DON</b> — "+h.cfg.StationName+".</p>"); err != nil { httpErr(w, 400, err.Error()); return }
 		writeJSON(w, ok())
 	})
