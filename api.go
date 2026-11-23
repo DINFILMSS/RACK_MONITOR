@@ -491,6 +491,7 @@ func (h *Hub) routes(static fs.FS) *http.ServeMux {
 		writeJSON(w, ok())
 	})
 	// ---- rundown / relógio ----
+	m.HandleFunc("GET /api/rundowns", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, h.PastRundowns(40)) })
 	m.HandleFunc("PUT /api/rundown", func(w http.ResponseWriter, r *http.Request) {
 		var b struct{ Items []RItem `json:"items"` }
 		if !readJSON(w, r, &b) { return }
