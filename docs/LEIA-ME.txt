@@ -1,4 +1,4 @@
-RACK MONITOR BY DON  ·  V2.12
+RACK MONITOR BY DON  ·  V2.12.1
 =====================================================================
 Monitor de rack de transmissão: ATEM, HyperDeck, VideoHub e qualquer
 equipamento IP. Um único arquivo .exe — sem instalador, sem .NET,
