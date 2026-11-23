@@ -1,9 +1,15 @@
-RACK MONITOR BY DON  ·  V2.11
+RACK MONITOR BY DON  ·  V2.12
 =====================================================================
 Monitor de rack de transmissão: ATEM, HyperDeck, VideoHub e qualquer
 equipamento IP. Um único arquivo .exe — sem instalador, sem .NET,
 sem compilação no Windows e SEM ATEM SDK.
 
+
+NOVO NA V2.12 — COPIAR ROTEIRO DE OUTRO DIA
+---------------------------------------------------------------------
+• Evento de vários dias: no RELÓGIO, clique em ⧉ COPIAR DE OUTRO DIA,
+  escolha o job anterior e "USAR ESTE ROTEIRO" (ou "ADICIONAR NO FIM").
+  Copia blocos e tempos; depois é só ajustar o que mudou.
 
 NOVO NA V2.11 — SEGURANÇA E ATUALIZAÇÃO MAIS SEGURA
 ---------------------------------------------------------------------

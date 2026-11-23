@@ -31,7 +31,7 @@ function vClock() {
   if (staticRendered !== "clk") {
     staticRendered = "clk";
     rdEdit = (items.length ? items : [{ title: "ABERTURA", dur: 120 }, { title: "BLOCO 1", dur: 900 }, { title: "INTERVALO", dur: 300 }]).map(x => Object.assign({}, x));
-    $("#view").innerHTML = `<div id="clklive"></div><div class="card" style="margin-top:14px"><h2>ROTEIRO (RUNDOWN) DESTE JOB <span class="r"><button class="btn" onclick="rdEdit.push({title:'NOVO BLOCO',dur:300});drawRd()">+ BLOCO</button><button class="btn red" onclick="rdSave()">SALVAR ROTEIRO</button></span></h2>
+    $("#view").innerHTML = `<div id="clklive"></div><div class="card" style="margin-top:14px"><h2>ROTEIRO (RUNDOWN) DESTE JOB <span class="r"><button class="btn" onclick="rdCopy()" title="Copiar blocos e tempos do roteiro de um job anterior">⧉ COPIAR DE OUTRO DIA</button><button class="btn" onclick="rdEdit.push({title:'NOVO BLOCO',dur:300});drawRd()">+ BLOCO</button><button class="btn red" onclick="rdSave()">SALVAR ROTEIRO</button></span></h2>
       <div class="hint"><b style="color:var(--ok)">Salva sozinho</b> a cada alteração. Duração vazia = cronômetro livre (conta para cima). Cada início de bloco vira um MARCADOR com o timecode dos gravadores (entra na EDL e nos relatórios). Stream Deck: GET <code>http://${esc(location.hostname)}:${location.port || 80}/api/rundown/next</code> (também <code>start</code>, <code>prev</code>).</div>
       <div id="rdedit" style="margin-top:10px"></div></div>`;
     drawRd(true);
@@ -44,6 +44,39 @@ function drawRd(skipSave) {
   $("#rdedit").innerHTML = rdEdit.map((x, i) => `<div class="row" style="margin-bottom:6px"><span class="num mu" style="width:24px">${i + 1}</span><input value="${esc(x.title)}" style="flex:1" onchange="rdEdit[${i}].title=this.value;rdAuto()"><input value="${x.dur ? mmss(x.dur) : ""}" placeholder="livre" style="width:90px" title="duração (min:seg ou h:mm:ss) — vazio = cronômetro livre" onchange="rdEdit[${i}].dur=parseDur(this.value);drawRd()"><button class="btn ghost" onclick="if(${i}>0){[rdEdit[${i}-1],rdEdit[${i}]]=[rdEdit[${i}],rdEdit[${i}-1]];drawRd()}">↑</button><button class="btn ghost" onclick="rdEdit.splice(${i},1);drawRd()">✕</button></div>`).join("") + `<div class="mu sm">Total planejado: <b class="num">${mmss(rdEdit.reduce((a, x) => a + x.dur, 0))}</b></div>`;
 }
 window.drawRd = drawRd;
+// copiar o roteiro de um job anterior (mesmo evento em vários dias)
+window.rdCopy = async () => {
+  let L;
+  try { L = await api("GET", "/api/rundowns"); } catch (e) { toast(esc(e.message), "crit"); return; }
+  if (!L.length) { toast("Nenhum job anterior com roteiro para copiar.", "warn"); return; }
+  const b = modal("COPIAR ROTEIRO DE OUTRO DIA", `<div class="hint" style="margin:0 0 10px">Copia só os <b>blocos e tempos</b>. Depois é só ajustar o que mudou — salva sozinho.</div>
+    <input id="rcq" placeholder="Buscar por job, cliente ou local…" style="width:100%;margin-bottom:10px">
+    <div id="rcl" class="rclist"></div>`);
+  const draw = q => {
+    q = (q || "").toLowerCase();
+    $("#rcl", b).innerHTML = L.map((r, i) => ({ r, i })).filter(({ r }) => !q || [r.jobName, r.client, r.venue].join(" ").toLowerCase().includes(q)).map(({ r, i }) => `
+      <div class="rcitem"><div class="rch"><b>${esc(r.jobName)}</b><span class="mu sm">${esc(dt(r.opened))}${r.client ? " · " + esc(r.client) : ""}${r.venue ? " · " + esc(r.venue) : ""}</span></div>
+        <div class="mu sm">${r.items.length} bloco${r.items.length > 1 ? "s" : ""}${r.total ? " · " + hms(r.total) + " planejados" : ""}</div>
+        <div class="rcprev">${r.items.slice(0, 8).map(x => `<span>${esc(x.title)}${x.dur ? ` <i>${hms(x.dur)}</i>` : ""}</span>`).join("")}${r.items.length > 8 ? `<span class="mu">+${r.items.length - 8}</span>` : ""}</div>
+        <div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" onclick="rdCopyApply(${i},'add')">+ ADICIONAR NO FIM</button><button class="btn red" onclick="rdCopyApply(${i},'replace')">⧉ USAR ESTE ROTEIRO</button></div></div>`).join("") || `<div class="empty">Nada encontrado.</div>`;
+  };
+  $("#rcq", b).oninput = e => draw(e.target.value);
+  draw("");
+  window.rdCopyApply = async (i, mode) => {
+    const src = L[i].items.map(x => ({ title: x.title, dur: x.dur }));
+    const r = S.rundown || {}, running = r.current >= 0 && !valid(r.ended);
+    const has = (rdEdit || []).filter(x => x.title.trim()).length;
+    if (mode === "replace" && (has || running)) {
+      closeModal();
+      const ok = await confirmBox("TROCAR O ROTEIRO", `Trocar o roteiro atual (${has} bloco${has === 1 ? "" : "s"}) pelo de <b>${esc(L[i].jobName)}</b> (${src.length} blocos)?${running ? `<br><br><b style="color:var(--warn)">O programa está rodando.</b> O relógio continua; só a lista de blocos muda.` : ""}`, "TROCAR");
+      if (!ok) return;
+    } else closeModal();
+    rdEdit = mode === "add" ? [...(rdEdit || []), ...src] : src;
+    drawRd();
+    await rdSave(true);
+    toast(`Roteiro de ${esc(L[i].jobName)} ${mode === "add" ? "adicionado no fim" : "copiado"}: ${src.length} blocos.`, "ok");
+  };
+};
 window.parseDur = v => { const p = String(v).split(":").map(Number); return p.reduce((a, x) => a * 60 + (x || 0), 0); };
 window.rdSave = async (quiet) => { try { await api("PUT", "/api/rundown", { items: (rdEdit || []).filter(x => x.title.trim()) }); if (!quiet) toast("Roteiro salvo.", "ok"); } catch (e) { toast(esc(e.message), "crit"); } };
 let rdT = 0;

@@ -119,6 +119,13 @@ func (h *Hub) NewJob(meta Job, auto bool) *Job {
 	h.CloseJob()
 	now := time.Now()
 	meta.ID = "JOB_" + now.Format("20060102_150405")
+	// dois jobs no mesmo segundo não podem cair na mesma pasta (o segundo apagaria o primeiro)
+	for n := 2; ; n++ {
+		dir, err := h.jobDir(meta.ID)
+		if err != nil { break }
+		if _, err := os.Stat(dir); os.IsNotExist(err) { break }
+		meta.ID = fmt.Sprintf("JOB_%s_%d", now.Format("20060102_150405"), n)
+	}
 	meta.Opened = now
 	meta.Closed = time.Time{}
 	if strings.TrimSpace(meta.Name) == "" { meta.Name = "Job " + now.Format("02/01/2006 15:04") }

@@ -402,3 +402,12 @@ input[type=checkbox],input[type=radio]{accent-color:var(--brand)}
 .kchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 .kchip{display:inline-flex;align-items:center;gap:5px;max-width:100%;font-size:11px;font-weight:700;border-radius:4px;padding:2px 7px 2px 2px;background:rgba(234,42,58,.16);border:1px solid rgba(234,42,58,.55);color:#ffd5d9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kchip i{font-style:normal;font-size:9.5px;letter-spacing:.06em;background:var(--pgm);color:#fff;border-radius:3px;padding:1px 4px}
+
+/* copiar roteiro */
+.rclist{display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow:auto}
+.rcitem{background:var(--p2);border:1px solid var(--edge2);border-radius:8px;padding:10px 12px}
+.rcitem:hover{border-color:var(--brand2)}
+.rch{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.rcprev{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.rcprev span{font-size:11px;background:var(--p3);border-radius:4px;padding:2px 6px}
+.rcprev i{font-style:normal;color:var(--mu)}

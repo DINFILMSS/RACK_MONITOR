@@ -1,4 +1,9 @@
-## Novidades da V2.11
+## Novidades da V2.12
+
+- **Copiar roteiro de outro dia**: no RELÓGIO, o botão **⧉ COPIAR DE OUTRO DIA** lista os roteiros dos jobs anteriores (com busca por job, cliente ou local) e copia os blocos e tempos para o job atual. Dá para **usar o roteiro inteiro** ou **adicionar no fim** do atual. Depois é só ajustar o que mudou.
+- Corrigido: dois jobs abertos no mesmo segundo caíam na mesma pasta e o segundo apagava o primeiro.
+
+## Da V2.11
 
 - **Senha de administrador**: para alterar a configuração por outro aparelho da rede (tablet, celular, outro PC) é preciso digitar a senha definida no computador do rack. Sem senha definida, só o computador do rack altera a configuração. Todos continuam vendo o painel normalmente.
 - **Formatar exige o PIN de comandos.**

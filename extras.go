@@ -101,6 +101,42 @@ func (h *Hub) RundownAction(action, origin string, items []RItem) error {
 	return nil
 }
 
+// PastRundown: roteiro de um job anterior, para copiar (eventos de vários dias).
+type PastRundown struct {
+	JobID   string    `json:"jobId"`
+	JobName string    `json:"jobName"`
+	Client  string    `json:"client"`
+	Venue   string    `json:"venue"`
+	Opened  time.Time `json:"opened"`
+	Items   []RItem   `json:"items"`
+	Total   int       `json:"total"` // segundos planejados
+}
+
+// roteiro sugerido que a tela grava sozinha num job novo: não vale a pena oferecer para copiar
+func defaultRundown(items []RItem) bool {
+	return len(items) == 3 && items[0] == RItem{"ABERTURA", 120} && items[1] == RItem{"BLOCO 1", 900} && items[2] == RItem{"INTERVALO", 300}
+}
+
+// PastRundowns: roteiros dos jobs anteriores (mais recentes primeiro), sem o job atual.
+func (h *Hub) PastRundowns(limit int) []PastRundown {
+	h.mu.Lock(); cur := ""; if h.job != nil { cur = h.job.ID }; h.mu.Unlock()
+	out := []PastRundown{}
+	for _, j := range h.ListJobs() {
+		if j.ID == cur { continue }
+		dir, err := h.jobDir(j.ID)
+		if err != nil { continue }
+		b, err := os.ReadFile(filepath.Join(dir, "rundown.json"))
+		if err != nil { continue }
+		var r Rundown
+		if json.Unmarshal(b, &r) != nil || len(r.Items) == 0 || defaultRundown(r.Items) { continue }
+		p := PastRundown{JobID: j.ID, JobName: j.Name, Client: j.Client, Venue: j.Venue, Opened: j.Opened, Items: r.Items}
+		for _, it := range r.Items { p.Total += it.Dur }
+		out = append(out, p)
+		if len(out) >= limit { break }
+	}
+	return out
+}
+
 // ---------- histórico entre jobs ----------
 
 func (h *Hub) History(days int) map[string]any {
