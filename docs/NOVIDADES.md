@@ -1,4 +1,9 @@
-## Novidades da V2.12.1
+## Novidades da V2.13
+
+- **Relógio do roteiro na tela PAINEL**: entre ALERTAS ATIVOS e ÚLTIMOS EVENTOS aparece o quadro RELÓGIO · ROTEIRO com a hora, o bloco atual e o tempo restante (amarelo perto do fim, vermelho se estourar, com barra de progresso), há quanto tempo está no ar, o ritmo (no tempo / atrasado / adiantado) e o próximo bloco. Botões para iniciar o programa e passar de bloco sem sair do PAINEL.
+- **Liga e desliga em cada aparelho**: o ✕ esconde o quadro naquele computador, tablet ou celular (os outros não mudam). Para mostrar de novo, clique em ⏱ RELÓGIO ao lado de ÚLTIMOS EVENTOS.
+
+## Da V2.12.1
 
 - **A tela recarrega sozinha depois de uma atualização**: antes, o navegador que já estava aberto continuava com a tela da versão anterior (por exemplo, sem o botão novo do RELÓGIO) até alguém apertar Ctrl+Shift+R. Agora o painel percebe que o monitor mudou de versão e recarrega sozinho, em todos os aparelhos (PC do rack, tablets, celulares, telão).
 
