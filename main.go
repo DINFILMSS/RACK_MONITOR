@@ -19,7 +19,7 @@ import (
 	"time"
 )
 
-var AppVersion = "2.12.1" // na compilação do GitHub vem da tag (-X main.AppVersion=…)
+var AppVersion = "2.13" // na compilação do GitHub vem da tag (-X main.AppVersion=…)
 
 //go:embed web
 var webFS embed.FS

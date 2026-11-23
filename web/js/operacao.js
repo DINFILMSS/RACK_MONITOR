@@ -22,7 +22,8 @@ function vPainel() {
     <div>
       <h2>ALERTAS ATIVOS ${al.length ? `<span class="r"><button class="btn" onclick="ack('*')">RECONHECER TODOS</button></span>` : ""}</h2>
       <div class="alerts">${al.length ? al.map(alertCard).join("") : `<div class="okbig"><b>TUDO OK</b><div class="mu sm" style="margin-top:6px">${on} equipamentos respondendo · regras ativas</div></div>`}</div>
-      <h2 style="margin-top:18px">ÚLTIMOS EVENTOS <span class="r"><a class="btn ghost" href="#/timeline">VER TUDO</a></span></h2>
+      ${miniClock()}
+      <h2 style="margin-top:18px">ÚLTIMOS EVENTOS <span class="r">${painelClockOn() ? "" : `<button class="btn ghost" title="Mostrar o relógio do roteiro neste aparelho" onclick="painelClockSet(true)">⏱ RELÓGIO</button>`}<a class="btn ghost" href="#/timeline">VER TUDO</a></span></h2>
       <div class="card feed" style="padding:6px 10px">${EV.filter(e => e.sev !== "trace").slice(0, 30).map(evRow).join("") || `<div class="empty">Sem eventos ainda.</div>`}</div>
     </div>
     <div>${Object.entries(groups).map(([g, list]) => `<div class="group"><div class="gh">${esc(g.toUpperCase())}</div><div class="tiles">${list.map(tile).join("")}</div></div>`).join("")}</div>

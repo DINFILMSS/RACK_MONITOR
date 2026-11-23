@@ -3,21 +3,27 @@
 // ---------------- RELÓGIO / RUNDOWN ----------------
 const mmss = s => { const neg = s < 0; s = Math.abs(Math.round(s)); const h = Math.floor(s / 3600); return (neg ? "−" : "") + (h ? h + ":" + pad(Math.floor(s / 60) % 60) : Math.floor(s / 60)) + ":" + pad(s % 60); };
 let rdEdit = null;
-function vClock() {
-  const tela = params[0] === "tela";
+// estado calculado do relógio/roteiro (usado no RELÓGIO e no quadro da tela PAINEL)
+function rdCalc() {
   const r = S.rundown || { items: [], current: -1 };
   const items = r.items || [];
-  const now = Date.now(), d = new Date();
+  const now = Date.now();
   const started = r.current >= 0 && valid(r.startedAt), ended = valid(r.ended);
   const cur = started && r.current < items.length ? items[r.current] : null;
   const prog = started ? ((ended ? new Date(r.ended) : now) - new Date(r.startedAt)) / 1000 : 0;
   const inBlock = cur ? (now - new Date(r.blockAt)) / 1000 : 0;
   const free = cur && !cur.dur; // bloco sem duração = cronômetro progressivo
   const left = cur ? (free ? inBlock : cur.dur - inBlock) : 0;
-  const planned = items.slice(0, Math.max(0, r.current)).reduce((a, x) => a + x.dur, 0) + (cur ? Math.min(inBlock, cur.dur) : 0);
-  const drift = started && !ended ? prog - planned - (cur && inBlock > cur.dur ? 0 : 0) : 0;
   const delay = started ? prog - (items.slice(0, Math.max(0, r.current)).reduce((a, x) => a + x.dur, 0) + inBlock) : 0;
   const next = started && r.current + 1 < items.length ? items[r.current + 1] : null;
+  const pace = started && !ended ? (Math.abs(delay) < 15 ? "NO TEMPO" : (delay > 0 ? "ATRASADO " : "ADIANTADO ") + mmss(Math.abs(delay))) : "—";
+  const paceColor = Math.abs(delay) < 15 ? "var(--ok)" : delay > 0 ? "var(--red)" : "var(--warn)";
+  return { r, items, started, ended, cur, prog, inBlock, free, left, delay, next, pace, paceColor };
+}
+function vClock() {
+  const tela = params[0] === "tela";
+  const d = new Date();
+  const { r, items, started, ended, cur, prog, free, left, delay, next } = rdCalc();
   const live = `<div class="clk">
     <div class="clk-now"><small>HORA</small><b class="num">${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}</b></div>
     <div class="clk-blk ${free ? "" : cur && left < 0 ? "over" : cur && left < 30 ? "soon" : ""}"><small>${cur ? "BLOCO " + (r.current + 1) + "/" + items.length + " · " + esc(cur.title) : ended ? "PROGRAMA ENCERRADO" : "AGUARDANDO INÍCIO"}</small><b class="num">${cur ? mmss(left) : "--:--"}</b><span>${cur ? (free ? "tempo no bloco (sem duração definida)" : left < 0 ? "ESTOURADO" : "restante no bloco") : ""}</span></div>
@@ -44,6 +50,30 @@ function drawRd(skipSave) {
   $("#rdedit").innerHTML = rdEdit.map((x, i) => `<div class="row" style="margin-bottom:6px"><span class="num mu" style="width:24px">${i + 1}</span><input value="${esc(x.title)}" style="flex:1" onchange="rdEdit[${i}].title=this.value;rdAuto()"><input value="${x.dur ? mmss(x.dur) : ""}" placeholder="livre" style="width:90px" title="duração (min:seg ou h:mm:ss) — vazio = cronômetro livre" onchange="rdEdit[${i}].dur=parseDur(this.value);drawRd()"><button class="btn ghost" onclick="if(${i}>0){[rdEdit[${i}-1],rdEdit[${i}]]=[rdEdit[${i}],rdEdit[${i}-1]];drawRd()}">↑</button><button class="btn ghost" onclick="rdEdit.splice(${i},1);drawRd()">✕</button></div>`).join("") + `<div class="mu sm">Total planejado: <b class="num">${mmss(rdEdit.reduce((a, x) => a + x.dur, 0))}</b></div>`;
 }
 window.drawRd = drawRd;
+
+// ---- quadro do relógio na tela PAINEL (liga/desliga em cada aparelho) ----
+const painelClockOn = () => { try { return localStorage.getItem("rd_painelClock") !== "0"; } catch (e) { return true; } };
+window.painelClockSet = on => { try { localStorage.setItem("rd_painelClock", on ? "1" : "0"); } catch (e) { } render(); };
+function miniClockBody() {
+  const d = new Date();
+  const { items, started, ended, cur, prog, inBlock, free, left, next, pace, paceColor, r } = rdCalc();
+  const st = free ? "" : cur && left < 0 ? "over" : cur && left < 30 ? "soon" : "";
+  const pct = cur && cur.dur ? Math.min(100, Math.max(0, inBlock / cur.dur * 100)) : 0;
+  const title = cur ? `BLOCO ${r.current + 1}/${items.length} · ${esc(cur.title)}` : ended ? "PROGRAMA ENCERRADO" : items.length ? `AGUARDANDO INÍCIO · ${items.length} bloco${items.length > 1 ? "s" : ""}` : "SEM ROTEIRO";
+  return `<div class="mclk">
+    <div class="mclk-now"><small>HORA</small><b class="num">${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}</b></div>
+    <div class="mclk-blk ${st}"><small>${title}</small><b class="num">${cur ? mmss(left) : "--:--"}</b><span>${cur ? (free ? "tempo no bloco" : left < 0 ? "ESTOURADO" : "restante") : ""}</span>${cur && cur.dur ? `<i class="mclk-bar"><i style="width:${pct}%"></i></i>` : ""}</div>
+  </div>
+  <div class="mclk-info"><span><small>NO AR HÁ</small><b class="num">${started ? mmss(prog) : "--:--"}</b></span><span><small>RITMO</small><b class="num" style="color:${started && !ended ? paceColor : "inherit"}">${pace}</b></span><span class="mclk-next"><small>PRÓXIMO</small><b>${next ? esc(next.title) + ` <span class="num mu">${next.dur ? mmss(next.dur) : "livre"}</span>` : "—"}</b></span></div>
+  <div class="row" style="margin-top:8px">${!started || ended ? (items.length ? `<button class="btn red" onclick="api('POST','/api/rundown/start').catch(e=>toast(esc(e.message),'warn'))">▶ INICIAR PROGRAMA</button>` : `<a class="btn" href="#/relogio">MONTAR ROTEIRO</a>`) : `<button class="btn" onclick="rd('prev')" title="Bloco anterior">◀</button><button class="btn red" style="flex:1" onclick="rd('next')">${next ? "PRÓXIMO ▶ " + esc(next.title) : "■ ENCERRAR PROGRAMA"}</button>`}</div>`;
+}
+function miniClock() {
+  if (!painelClockOn()) return "";
+  return `<h2 style="margin-top:18px">RELÓGIO · ROTEIRO <span class="r"><a class="btn ghost" href="#/relogio">ABRIR</a><button class="btn ghost" title="Esconder o relógio neste aparelho" onclick="painelClockSet(false)">✕</button></span></h2>
+    <div class="card" id="mclk">${miniClockBody()}</div>`;
+}
+// atualiza só o quadro a cada meio segundo (sem redesenhar a tela inteira)
+setInterval(() => { if (view === "painel") { const el = document.getElementById("mclk"); if (el && !pointerDown) el.innerHTML = miniClockBody(); } }, 500);
 // copiar o roteiro de um job anterior (mesmo evento em vários dias)
 window.rdCopy = async () => {
   let L;

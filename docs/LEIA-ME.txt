@@ -1,9 +1,17 @@
-RACK MONITOR BY DON  ·  V2.12.1
+RACK MONITOR BY DON  ·  V2.13
 =====================================================================
 Monitor de rack de transmissão: ATEM, HyperDeck, VideoHub e qualquer
 equipamento IP. Um único arquivo .exe — sem instalador, sem .NET,
 sem compilação no Windows e SEM ATEM SDK.
 
+
+NOVO NA V2.13 — RELÓGIO DO ROTEIRO NO PAINEL
+---------------------------------------------------------------------
+• A tela PAINEL mostra o quadro RELÓGIO · ROTEIRO (hora, bloco atual,
+  tempo restante, ritmo, próximo bloco) com botões de iniciar e de
+  passar de bloco.
+• Não usa roteiro? Clique no ✕ do quadro: ele some só naquele
+  aparelho. Para voltar, ⏱ RELÓGIO ao lado de ÚLTIMOS EVENTOS.
 
 NOVO NA V2.12 — COPIAR ROTEIRO DE OUTRO DIA
 ---------------------------------------------------------------------
