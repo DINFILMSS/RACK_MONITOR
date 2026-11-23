@@ -1,4 +1,8 @@
-## Novidades da V2.12
+## Novidades da V2.12.1
+
+- **A tela recarrega sozinha depois de uma atualização**: antes, o navegador que já estava aberto continuava com a tela da versão anterior (por exemplo, sem o botão novo do RELÓGIO) até alguém apertar Ctrl+Shift+R. Agora o painel percebe que o monitor mudou de versão e recarrega sozinho, em todos os aparelhos (PC do rack, tablets, celulares, telão).
+
+## Da V2.12
 
 - **Copiar roteiro de outro dia**: no RELÓGIO, o botão **⧉ COPIAR DE OUTRO DIA** lista os roteiros dos jobs anteriores (com busca por job, cliente ou local) e copia os blocos e tempos para o job atual. Dá para **usar o roteiro inteiro** ou **adicionar no fim** do atual. Depois é só ajustar o que mudou.
 - Corrigido: dois jobs abertos no mesmo segundo caíam na mesma pasta e o segundo apagava o primeiro.

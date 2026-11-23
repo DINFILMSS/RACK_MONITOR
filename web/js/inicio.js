@@ -34,7 +34,17 @@ if ("serviceWorker" in navigator && window.isSecureContext) navigator.serviceWor
   try { soundOn = localStorage.getItem("rd_sound") === "1"; } catch (e) { }
   if (soundOn) { soundOn = false; } // navegador exige um clique para liberar áudio
   WHO = await api("GET", "/api/whoami").catch(() => WHO);
-  setInterval(async () => { WHO = await api("GET", "/api/whoami").catch(() => WHO); }, 15000);
+  const loadedVer = WHO.version || "";
+  // o monitor foi atualizado (ou trocado de versão): recarrega a página para usar a tela nova
+  const verCheck = async () => {
+    WHO = await api("GET", "/api/whoami").catch(() => WHO);
+    if (loadedVer && WHO.version && WHO.version !== loadedVer) {
+      toast(`Monitor atualizado para a V${esc(WHO.version)} — recarregando a tela…`, "ok");
+      setTimeout(() => location.reload(), 1500);
+    }
+  };
+  setInterval(verCheck, 15000);
+  window.addEventListener("focus", verCheck);
   const ev = await api("GET", "/api/events?min=trace").catch(() => []);
   EV = ev;
   route();
