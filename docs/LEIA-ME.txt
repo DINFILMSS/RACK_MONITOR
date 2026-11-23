@@ -30,6 +30,9 @@ NOVO NA V2.11 — SEGURANÇA E ATUALIZAÇÃO MAIS SEGURA
   sozinho de novo.
 • "Instalar sozinho" agora espera também a vigilância estar desarmada
   e não estar a menos de 30 min de um horário da agenda.
+• KEYS E DSK: a aba ATEM mostra cada USK (tipo, fonte, NO AR, "entra/sai
+  no próximo") e cada DSK (fonte, NO AR, TIE). No PAINEL aparece o que
+  está no ar. Companion: meN_keyN, meN_keyN_src, dskN, dskN_src.
 • Versões de teste (beta): CONFIGURAÇÃO → SISTEMA → ATUALIZAÇÕES →
   "Receber versões de teste". Use só num computador de testes.
 • Corrigido: as opções de ATUALIZAÇÕES e o modelo de nome dos clipes

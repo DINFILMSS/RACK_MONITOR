@@ -8,6 +8,7 @@
 - **Volta automática**: se a versão nova não abrir, ou cair nos primeiros minutos, o monitor volta sozinho para a anterior.
 - **Instalar sozinho** espera também a vigilância desarmada e longe dos horários da agenda.
 - **Canal beta** opcional para testar versões antes de liberar para todos.
+- **Keys e DSK das ATEMs**: a aba ATEM mostra cada upstream key (USK) de cada M/E com o tipo (LUMA, CHROMA, PATTERN, DVE/PIP), a fonte de fill/key, se está NO AR e se entra ou sai no próximo CUT/AUTO; e cada DSK com a fonte, NO AR e TIE. Na tela PAINEL, o que está no ar aparece embaixo de cada ATEM. A linha do tempo registra a fonte quando um key entra ou sai, e o Companion ganha as variáveis `meN_keyN`, `meN_keyN_src`, `dskN` e `dskN_src`.
 - **Visual novo com a identidade DON**: logo DON Broadcast Engineer no topo, nos relatórios, no ícone do programa (Windows e Mac) e no ícone do navegador; verde neon e prata no painel. Vermelho continua só para alerta, REC e PGM.
 - Atalhos do Windows criados sem PowerShell (menos alarmes de antivírus).
 - Corrigido: opções de atualização e modelo de nome dos clipes não eram salvos.

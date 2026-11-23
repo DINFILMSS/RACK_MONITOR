@@ -208,6 +208,14 @@ func (h *Hub) companionVars() map[string]string {
 				v[fmt.Sprintf("%sme%d_pgm", p, i+1)] = at.Name(m.Program)
 				v[fmt.Sprintf("%sme%d_pvw", p, i+1)] = at.Name(m.Preview)
 				v[fmt.Sprintf("%sme%d_ftb", p, i+1)] = map[bool]string{true: "1", false: "0"}[m.FTB]
+				for k, on := range m.Keys {
+					v[fmt.Sprintf("%sme%d_key%d", p, i+1, k+1)] = map[bool]string{true: "1", false: "0"}[on]
+					if ki := m.KeyInfo[k]; ki != nil { v[fmt.Sprintf("%sme%d_key%d_src", p, i+1, k+1)] = at.Name(ki.Fill) }
+				}
+			}
+			for k, on := range at.DSK {
+				v[fmt.Sprintf("%sdsk%d", p, k+1)] = map[bool]string{true: "1", false: "0"}[on]
+				if di := at.DSKInfo[k]; di != nil { v[fmt.Sprintf("%sdsk%d_src", p, k+1)] = at.Name(di.Fill) }
 			}
 			am := h.cfg.auxMap(d.ID)
 			for i, src := range at.Aux { if am[i].Mode != "ignore" { v[fmt.Sprintf("%saux%d", p, i+1)] = at.Name(src) } }

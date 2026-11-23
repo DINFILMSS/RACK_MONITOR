@@ -31,6 +31,32 @@ document.addEventListener("pointerdown", () => pointerDown = true, true);
 document.addEventListener("pointerup", () => { pointerDown = false; setTimeout(schedule, 30); }, true);
 const armed = () => S && S.controlEnabled && new Date(S.controlArmedUntil) > Date.now();
 
+// ---- keys da ATEM (USK por M/E e DSK) ----
+const keyTypeTxt = { LUMA: "LUMA", CHROMA: "CHROMA", PATTERN: "PATTERN", DVE: "DVE / PIP" };
+function uskList(a, m) {
+  const ks = new Set([...Object.keys(m.keys || {}), ...Object.keys(m.keyInfo || {})].map(Number));
+  return [...ks].sort((x, y) => x - y).map(k => {
+    const inf = m.keyInfo?.[k] || null;
+    return { k, on: !!m.keys?.[k], next: !!(m.next & (2 << k)), type: inf ? (keyTypeTxt[inf.type] || inf.type) : "", fill: inf && inf.type !== "PATTERN" ? atemSrc(a, inf.fill) : "", key: inf && inf.key !== inf.fill && ["LUMA"].includes(inf.type) ? atemSrc(a, inf.key) : "" };
+  });
+}
+function dskList(a) {
+  const ks = new Set([...Object.keys(a.dsk || {}), ...Object.keys(a.dskInfo || {})].map(Number));
+  return [...ks].sort((x, y) => x - y).map(k => {
+    const inf = a.dskInfo?.[k] || {};
+    return { k, on: !!a.dsk?.[k], tie: !!inf.tie, trans: !!inf.inTrans, fill: inf.fill || inf.key ? atemSrc(a, inf.fill) : "", key: inf.key && inf.key !== inf.fill ? atemSrc(a, inf.key) : "" };
+  });
+}
+const atemSrc = (a, s) => a?.inputs?.[s]?.long || (s ? "Fonte " + s : "—");
+// chip compacto dos keys NO AR (tela PAINEL)
+function keysOnAir(a) {
+  const out = [];
+  Object.entries(a.mes || {}).sort((x, y) => x[0] - y[0]).forEach(([i, m]) => uskList(a, m).filter(u => u.on).forEach(u =>
+    out.push(`<span class="kchip on" title="M/E ${+i + 1} · USK ${u.k + 1}${u.type ? " · " + u.type : ""}"><i>M/E${+i + 1} KEY${u.k + 1}</i>${esc(u.fill || u.type || "NO AR")}</span>`)));
+  dskList(a).filter(x => x.on).forEach(x => out.push(`<span class="kchip on dsk" title="DSK ${x.k + 1}"><i>DSK${x.k + 1}</i>${esc(x.fill || "NO AR")}</span>`));
+  return out.length ? `<div class="kchips">${out.join("")}</div>` : "";
+}
+
 // senha de administrador (alterar configuração por outro aparelho): fica só nesta aba
 const adminPin = { get: () => { try { return sessionStorage.getItem("rackAdminPin") || ""; } catch { return ""; } }, set: v => { try { v ? sessionStorage.setItem("rackAdminPin", v) : sessionStorage.removeItem("rackAdminPin"); } catch { } } };
 async function api(method, url, body, retried) {
@@ -244,7 +270,7 @@ function tileMetric(d) {
     const nm = s => esc(d.atem.inputs?.[s]?.long || d.atem.inputs?.[s]?.short || "Fonte " + s);
     const extra = [d.atem.stream ? `STREAM ${d.atem.stream}` : "", d.atem.rec ? `REC ${d.atem.rec}` : ""].filter(Boolean).join(" · ");
     if (!M.length) return `<div class="sub">lendo estado…</div>`;
-    return `<div style="min-width:0;flex:1"><table class="metab"><tr><th></th><th>PVW</th><th>PGM</th></tr>${M.map(([k, m]) => `<tr><td class="men">M/E ${+k + 1}</td><td class="pv">${nm(m.preview)}</td><td class="pg">${nm(m.program)}${m.ftb ? ` <b class="ftb">FTB</b>` : ""}</td></tr>`).join("")}</table>${extra ? `<div class="sub" style="margin-top:4px">${extra}</div>` : ""}</div>`;
+    return `<div style="min-width:0;flex:1"><table class="metab"><tr><th></th><th>PVW</th><th>PGM</th></tr>${M.map(([k, m]) => `<tr><td class="men">M/E ${+k + 1}</td><td class="pv">${nm(m.preview)}</td><td class="pg">${nm(m.program)}${m.ftb ? ` <b class="ftb">FTB</b>` : ""}</td></tr>`).join("")}</table>${keysOnAir(d.atem)}${extra ? `<div class="sub" style="margin-top:4px">${extra}</div>` : ""}</div>`;
   }
   if (d.deck) {
     const k = d.deck, rec = k.transport === "record";

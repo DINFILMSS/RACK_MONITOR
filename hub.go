@@ -29,7 +29,26 @@ type AtemME struct {
 	FTB          bool         `json:"ftb"`
 	FTBTrans     bool         `json:"ftbTrans"`
 	Keys         map[int]bool `json:"keys"`
+	KeyInfo      map[int]*AtemKey `json:"keyInfo"` // fonte e tipo de cada upstream key
+	Next         int          `json:"next"`         // próxima transição: bit0 = fundo, bit1.. = USK 1..
 	ProgramSince time.Time    `json:"programSince"`
+}
+
+// AtemKey: upstream keyer (USK) de um M/E.
+type AtemKey struct {
+	Type string `json:"type"` // LUMA, CHROMA, PATTERN, DVE
+	Fill int    `json:"fill"`
+	Key  int    `json:"key"`
+	Fly  bool   `json:"fly"`
+}
+
+// AtemDSK: downstream keyer.
+type AtemDSK struct {
+	Fill    int  `json:"fill"`
+	Key     int  `json:"key"`
+	Tie     bool `json:"tie"`
+	InTrans bool `json:"inTrans"`
+	Auto    bool `json:"auto"`
 }
 
 type AtemState struct {
@@ -40,6 +59,7 @@ type AtemState struct {
 	MEs          map[int]*AtemME    `json:"mes"`
 	Aux          map[int]int        `json:"aux"`
 	DSK          map[int]bool       `json:"dsk"`
+	DSKInfo      map[int]*AtemDSK   `json:"dskInfo"`
 	Tally        map[int]int        `json:"tally"`
 	Stream       string             `json:"stream"`
 	StreamTime   string             `json:"streamTime"`
@@ -53,7 +73,7 @@ type AtemState struct {
 }
 
 func newAtemState() *AtemState {
-	return &AtemState{Inputs: map[int]*AtemInput{}, MEs: map[int]*AtemME{}, Aux: map[int]int{}, DSK: map[int]bool{},
+	return &AtemState{Inputs: map[int]*AtemInput{}, MEs: map[int]*AtemME{}, Aux: map[int]int{}, DSK: map[int]bool{}, DSKInfo: map[int]*AtemDSK{},
 		Tally: map[int]int{}, Macros: map[int]string{}, Cams: map[int]*CamState{}, MacroRunning: -1}
 }
 

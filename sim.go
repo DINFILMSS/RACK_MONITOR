@@ -120,8 +120,28 @@ func (s *simAtem) dump() [][]byte {
 		out = append(out, cmd("FtbS", []byte{byte(i), b2(s.ftb[i]), 0, 0}))
 		out = append(out, cmd("KeOn", []byte{byte(i), 0, b2(s.keys[i]), 0}))
 	}
+	// keys: USK 1 = LUMA com o GC, USK 2 = DVE (PIP) com a 5ª fonte; DSK 1 = GC, DSK 2 = 2ª fonte
+	gc, pip := s.order[0], s.order[0]
+	for i, id := range s.order {
+		if strings.Contains(strings.ToUpper(s.inputs[id][0]), "GC") { gc = id }
+		if i == 4 { pip = id }
+	}
+	kebp := func(me, k, typ, fill, key int) []byte {
+		d := []byte{byte(me), byte(k), byte(typ), 0, 1, b2(typ == 3), byte(fill >> 8), byte(fill), byte(key >> 8), byte(key), 0, 0}
+		return append(d, make([]byte, 8)...)
+	}
+	for i := 0; i < len(s.pgm); i++ {
+		out = append(out, cmd("KeBP", kebp(i, 0, 0, gc, gc)), cmd("KeBP", kebp(i, 1, 3, pip, pip)),
+			cmd("KeOn", []byte{byte(i), 1, 0, 0}), cmd("TrSS", []byte{byte(i), 0, 0x03, 0, 0x03, 0, 0, 0}))
+	}
 	for i, a := range s.aux { out = append(out, cmd("AuxS", []byte{byte(i), 0, byte(a >> 8), byte(a)})) }
-	for i := 0; i < 2; i++ { out = append(out, cmd("DskS", []byte{byte(i), b2(s.dsk[i]), 0, 0, 0, 0, 0, 0})) }
+	for i := 0; i < 2; i++ {
+		f := gc
+		if i == 1 { f = s.order[1] }
+		out = append(out, cmd("DskB", []byte{byte(i), 0, byte(f >> 8), byte(f), byte(f >> 8), byte(f)}),
+			cmd("DskP", []byte{byte(i), b2(i == 0), 25, 0, 0, 0, 0, 0}),
+			cmd("DskS", []byte{byte(i), b2(s.dsk[i]), 0, 0, 0, 0, 0, 0}))
+	}
 	for i, m := range s.macros {
 		d := append(be16(i), 1, 0)
 		d = append(d, be16(len(m))...)

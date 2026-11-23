@@ -38,7 +38,7 @@ function vAtem() {
     const head = `<div class="atemhead"><span class="dot ${d.severity}"></span><span class="t">${esc(d.name)}</span><span class="tag">${esc(a?.product || "ATEM")}</span><span class="mu sm">${esc(d.host)} · UDP ${d.port}${a ? " · protocolo " + esc(a.version) : ""}${d.online ? ` · ${d.latencyMs?.toFixed(1)} ms` : ""}</span>
       ${a?.stream ? `<span class="tag ${a.stream === "STREAMING" ? "crit" : ""}">STREAM ${esc(a.stream)} ${esc(a.streamTime || "")}</span>` : ""}${a?.rec ? `<span class="tag ${a.rec === "GRAVANDO" ? "crit" : ""}">REC ${esc(a.rec)} ${esc(a.recTime || "")}</span>` : ""}
       ${a && a.macroRunning >= 0 ? `<span class="tag warn">MACRO ▶ ${esc(a.macros?.[a.macroRunning] || "#" + (a.macroRunning + 1))}</span>` : ""}
-      ${Object.entries(a?.dsk || {}).map(([k, v]) => `<span class="tag ${v ? "crit" : ""}">DSK ${+k + 1} ${v ? "NO AR" : "OFF"}</span>`).join("")}</div>`;
+</div>${a && dskList(a).length ? `<div class="dskrow"><span class="lbl">DSK</span>${dskList(a).map(x => `<div class="kbox ${x.on ? "on" : ""} ${x.trans ? "trans" : ""}"><b>DSK ${x.k + 1}</b><span class="kst">${x.trans ? "EM TRANSIÇÃO" : x.on ? "NO AR" : "FORA"}</span>${x.tie ? `<span class="knext">TIE</span>` : ""}<div class="kf">${esc(x.fill || "—")}</div>${x.key ? `<div class="kk">key: ${esc(x.key)}</div>` : ""}</div>`).join("")}</div>` : ""}`;
     if (!d.online || !a) return `<section class="atem card">${head}<div class="empty">${esc(d.status)} — ${esc(d.detail)}</div></section>`;
     const nm = s => a.inputs?.[s]?.long || "Fonte " + s;
     const sh = s => a.inputs?.[s]?.short || s;
@@ -48,9 +48,10 @@ function vAtem() {
     const big = bus.length > 20;
     const mes = Object.entries(a.mes || {}).sort((x, y) => x[0] - y[0]).map(([i, m]) => `
       <div class="me"><div class="row"><span class="lbl">M/E ${+i + 1}</span>${m.ftb ? `<span class="tag crit">FADE TO BLACK</span>` : ""}${m.inTransition ? `<span class="tag warn">EM TRANSIÇÃO</span>` : ""}
-        ${Object.entries(m.keys || {}).map(([k, v]) => `<span class="tag ${v ? "pgm" : ""}">USK ${+k + 1}${v ? " NO AR" : ""}</span>`).join("")}<span class="spacer"></span><span class="mu xs">no ar há ${valid(m.programSince) ? ago(m.programSince) : "—"}</span></div>
+<span class="spacer"></span><span class="mu xs">no ar há ${valid(m.programSince) ? ago(m.programSince) : "—"}</span></div>
         <div class="busrow"><div class="bus pvw"><small>PREVIEW</small><b>${esc(nm(m.preview))}</b><div class="s">fonte ${m.preview}</div></div><div class="bus pgm"><small>PROGRAM</small><b>${esc(nm(m.program))}</b><div class="s">fonte ${m.program}</div></div></div>
         <div class="tbar"><i style="width:${m.inTransition ? m.transPos / 100 : 0}%"></i></div>
+        ${uskList(a, m).length ? `<div class="uskrow"><span class="lbl">KEYS</span>${uskList(a, m).map(u => `<div class="kbox ${u.on ? "on" : ""}"><b>USK ${u.k + 1}</b><span class="kst">${u.on ? "NO AR" : "FORA"}</span>${u.next ? `<span class="knext" title="Entra/sai no próximo CUT/AUTO">${u.on ? "SAI" : "ENTRA"} NO PRÓXIMO</span>` : ""}${u.type ? `<div class="kt">${esc(u.type)}</div>` : ""}<div class="kf">${esc(u.fill || (u.type ? "" : "—"))}</div>${u.key ? `<div class="kk">key: ${esc(u.key)}</div>` : ""}</div>`).join("")}</div>` : ""}
         ${big && !busOpen.has(d.id) ? "" : `<div class="srcs">`}${big && !busOpen.has(d.id) ? "" : bus.map(x => `<button class="src ${x.id === m.program ? "p" : x.id === m.preview ? "v" : ""}" title="${esc(x.long)}" ${S.controlEnabled ? `onclick="control('${d.id}','pvw',${i},${x.id})"` : "disabled"}>${esc(x.short || x.id)}</button>`).join("") + "</div>"}
         ${S.controlEnabled ? `<div class="ctrl needarm"><button class="btn red" onclick="control('${d.id}','cut',${i})">CUT</button><button class="btn" onclick="control('${d.id}','auto',${i})">AUTO</button><button class="btn" onclick="control('${d.id}','ftb',${i},0,'','Ativar/desativar FADE TO BLACK no M/E ${+i + 1} de ${jsq(d.name)}?')">FTB</button></div>` : ""}
       </div>`).join("");

@@ -384,3 +384,21 @@ body.wallmode .clk-blk b{font-size:min(16vw,230px)}
   .pill{padding:7px 11px;font-size:11px;white-space:nowrap}
 }
 input[type=checkbox],input[type=radio]{accent-color:var(--brand)}
+
+/* keys da ATEM */
+.uskrow,.dskrow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:8px 0 4px}
+.dskrow{margin:10px 0 2px}
+.uskrow .lbl,.dskrow .lbl{font-size:11px;letter-spacing:.16em;color:var(--mu);font-weight:700;align-self:center;min-width:42px}
+.kbox{background:var(--p2);border:1px solid var(--edge2);border-radius:8px;padding:6px 10px;min-width:130px;max-width:240px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.kbox b{font-size:12px;letter-spacing:.08em}
+.kbox .kst{font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--mu2)}
+.kbox .knext{font-size:9.5px;font-weight:800;letter-spacing:.06em;color:#111;background:var(--warn);border-radius:3px;padding:1px 5px}
+.kbox .kt{flex-basis:100%;font-size:10px;letter-spacing:.1em;color:var(--mu)}
+.kbox .kf{flex-basis:100%;font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kbox .kk{flex-basis:100%;font-size:11px;color:var(--mu)}
+.kbox.on{border-color:var(--pgm);background:linear-gradient(180deg,rgba(234,42,58,.22),var(--p2));box-shadow:0 0 12px rgba(234,42,58,.25)}
+.kbox.on .kst{color:#ff6b77}
+.kbox.trans{border-color:var(--warn)}
+.kchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.kchip{display:inline-flex;align-items:center;gap:5px;max-width:100%;font-size:11px;font-weight:700;border-radius:4px;padding:2px 7px 2px 2px;background:rgba(234,42,58,.16);border:1px solid rgba(234,42,58,.55);color:#ffd5d9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kchip i{font-style:normal;font-size:9.5px;letter-spacing:.06em;background:var(--pgm);color:#fff;border-radius:3px;padding:1px 4px}
